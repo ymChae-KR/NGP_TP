@@ -36,9 +36,9 @@ void WGameFramework::Create(HWND hWnd)
 
 void WGameFramework::OnDraw(HDC hdc)
 {
-	static int x = 10;
+	static int x = 1;
 	x++;
-	Rectangle(hdc, x + 10, 10, x + 100, 100);
+	Ellipse(hdc, x + 10, 10, x + 100, 100);
 }
 
 void WGameFramework::OnUpdate(const float frameTime)
