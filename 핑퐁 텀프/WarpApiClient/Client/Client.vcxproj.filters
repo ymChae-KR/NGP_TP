@@ -16,14 +16,14 @@
     <Filter Include="코딩 컨벤션">
       <UniqueIdentifier>{fcbe488c-3b35-4fea-a182-54ef12d198ce}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Defnie">
-      <UniqueIdentifier>{6a187ea5-2b13-448a-97c2-92278b6b5c54}</UniqueIdentifier>
-    </Filter>
     <Filter Include="GameFramework">
       <UniqueIdentifier>{3e2eaf91-a8f1-4b89-aafe-d4925852b1f2}</UniqueIdentifier>
     </Filter>
     <Filter Include="GameObject">
       <UniqueIdentifier>{dd78edb0-b636-497b-ad7d-533221fd66fa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="defnie">
+      <UniqueIdentifier>{6a187ea5-2b13-448a-97c2-92278b6b5c54}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -39,8 +39,8 @@
     <ClInclude Include="Client.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="Define.h">
-      <Filter>Defnie</Filter>
+    <ClInclude Include="define.h">
+      <Filter>defnie</Filter>
     </ClInclude>
     <ClInclude Include="GameFramework.h">
       <Filter>GameFramework</Filter>
@@ -50,6 +50,9 @@
     </ClInclude>
     <ClInclude Include="Ball.h">
       <Filter>GameObject</Filter>
+    </ClInclude>
+    <ClInclude Include="render_Func.h">
+      <Filter>defnie</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -150,9 +150,10 @@
   <ItemGroup>
     <ClInclude Include="Ball.h" />
     <ClInclude Include="Client.h" />
-    <ClInclude Include="Define.h" />
+    <ClInclude Include="define.h" />
     <ClInclude Include="GameFramework.h" />
     <ClInclude Include="Player.h" />
+    <ClInclude Include="render_Func.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
