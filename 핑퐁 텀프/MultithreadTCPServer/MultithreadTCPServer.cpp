@@ -4,6 +4,12 @@
 
 void err_quit(char* msg);
 void err_display(char* msg);
+DWORD WINAPI MainGameThread(LPVOID arg);
+DWORD WINAPI EndGameThread(LPVOID arg);
+
+MainGame::BallUpdate()
+MainGame::playerUpdate(bool BallState, Point2d p2dPosition)
+MainGame::notifyCollisions()
 
 // 클라이언트와 데이터 통신
 DWORD WINAPI ProcessClient(LPVOID arg)
