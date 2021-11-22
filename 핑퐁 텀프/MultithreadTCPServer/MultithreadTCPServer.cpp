@@ -5,11 +5,12 @@
 
 void err_quit(char* msg);
 void err_display(char* msg);
+void Send_Packet(void* _packet, SOCKET _sock);
 DWORD WINAPI MainGameThread(LPVOID arg);
 DWORD WINAPI EndGameThread(LPVOID arg);
 
 SOCKET listen_sock;
-unsigned int ThreadNum = 0;
+unsigned int ThreadNum = 1;
 
 //MainGame::BallUpdate()
 //MainGame::notifyCollisions()
@@ -46,7 +47,7 @@ DWORD WINAPI MainGameThread(LPVOID arg) {
     int retval;
     SOCKADDR_IN clientaddr;
     int addrlen;
-    char buf[BUFSIZE + 1];
+    char buf[BUFSIZE + 1]{};
 
     // 클라이언트 정보 얻기
     addrlen = sizeof(clientaddr);
@@ -62,13 +63,10 @@ DWORD WINAPI MainGameThread(LPVOID arg) {
         else if (retval == 0)
             break;
 
-        // 받은 데이터 출력
-        buf[retval] = '\0';
-        printf("[TCP/%s:%d] %s\n", inet_ntoa(clientaddr.sin_addr),
-            ntohs(clientaddr.sin_port), buf);
 
         // 데이터 보내기
-        retval = send(client_sock, buf, retval, 0);
+        cs_packet_mainGame* data = reinterpret_cast<cs_packet_mainGame*>(buf);
+        retval = send(client_sock, (char*)data, retval, 0);
         if (retval == SOCKET_ERROR) {
             err_display("send()");
             break;
@@ -80,10 +78,13 @@ DWORD WINAPI MainGameThread(LPVOID arg) {
     printf("[TCP 서버] 클라이언트 종료: IP 주소=%s, 포트 번호=%d\n",
         inet_ntoa(clientaddr.sin_addr), ntohs(clientaddr.sin_port));
 
+    g_clientIDManager[g_uiIDCnt].sc_Client_Address = SOCKADDR_IN();
+    g_clientIDManager[g_uiIDCnt].uiID = 0;
+    --g_uiIDCnt;
+
     return 0;
 
 }
-
 
 // 클라이언트와 데이터 통신
 DWORD WINAPI ProcessClient(LPVOID arg)
@@ -112,6 +113,8 @@ DWORD WINAPI ProcessClient(LPVOID arg)
         buf[retval] = '\0';
         printf("[TCP/%s:%d] %s\n", inet_ntoa(clientaddr.sin_addr),
             ntohs(clientaddr.sin_port), buf);
+
+        sc_packet_mainGame packet;
 
         // 데이터 보내기
         retval = send(client_sock, buf, retval, 0);
@@ -164,7 +167,11 @@ int main(int argc, char *argv[])
 
         g_clientIDManager[g_uiIDCnt].sc_Client_Address = clientaddr;
         g_clientIDManager[g_uiIDCnt].uiID = g_uiIDCnt++;
+        sc_packet_mainGame packet{};
+        packet.uiPlayerID = g_clientIDManager[g_uiIDCnt - 1].uiID;
         
+        Send_Packet(&packet, client_sock);
+        cout << g_uiIDCnt << "번째 클라이언트 접속 후 클라 ID 송신" << endl;
 
         // 스레드 생성
         hThread = CreateThread(NULL, 0, MainGameThread,
@@ -207,15 +214,13 @@ void err_display(char* msg)
     LocalFree(lpMsgBuf);
 }
 
-void Send_Packet(void* _packet)
+void Send_Packet(void* _packet, SOCKET _sock)
 {
     char* packet = reinterpret_cast<char*>(_packet);
     int retval;
 
     // 데이터 보내기
-    //sc_packet_mainGame packet{};
-
-    retval = send(listen_sock, (char*)&packet, sizeof(packet[0]), 0);
+    retval = send(_sock, (char*)&packet, sizeof(packet[0]), 0);
 
     if (retval == SOCKET_ERROR)
     {
@@ -223,6 +228,6 @@ void Send_Packet(void* _packet)
         return;
     }
 
-    printf("[TCP 클라이언트] %d바이트를 보냈습니다.\r\n", retval);
+    printf("[TCP 서버] %d바이트를 보냈습니다.\r\n", retval);
 
 }

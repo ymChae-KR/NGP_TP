@@ -13,6 +13,12 @@ struct ID
 	UINT			uiID;
 };
 
+struct cs_packet_mainGame
+{
+	VECTOR2 ptPos;
+	UINT uiPlayerID;
+};
+
 struct sc_packet_mainGame
 {
 	VECTOR2		vec2Pos;

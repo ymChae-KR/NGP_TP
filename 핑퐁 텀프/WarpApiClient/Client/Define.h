@@ -77,3 +77,8 @@ struct cs_packet_mainGame
 	UINT uiPlayerID;
 };
 
+struct sc_packet_mainGame
+{
+	VECTOR2		vec2Pos;
+	UINT		uiPlayerID;
+};

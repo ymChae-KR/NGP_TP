@@ -139,6 +139,8 @@ DWORD WINAPI GameThread(LPVOID arg) {
     {
         // 데이터 보내기
         cs_packet_mainGame packet{};
+        packet.ptPos = gGameFramework.GetPlayerPos();
+        packet.uiPlayerID = gGameFramework.GetID();
 
         retval = send(sock, (char*)&packet , sizeof(cs_packet_mainGame), 0);
         //retval = send(sock, buf, strlen(buf), 0);
@@ -157,6 +159,9 @@ DWORD WINAPI GameThread(LPVOID arg) {
         }
         else if (retval == 0)
             break;
+
+        cs_packet_mainGame* data = reinterpret_cast<cs_packet_mainGame*>(buf);
+        gGameFramework.SetPlayerData(*data);
 
         // 받은 데이터 출력
         buf[retval] = '\0';
