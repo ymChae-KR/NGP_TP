@@ -7,7 +7,7 @@ void err_display(char* msg);
 DWORD WINAPI MainGameThread(LPVOID arg);
 DWORD WINAPI EndGameThread(LPVOID arg);
 
-unsigned int ThreadNum = 0;
+unsigned int ThreadNum = 1;
 
 //MainGame::BallUpdate()
 //MainGame::notifyCollisions()
@@ -30,8 +30,6 @@ SOCKET init_Client_Socket(SOCKET listen_sock) {
     // listen()
     retval = listen(listen_sock, SOMAXCONN);
     if (retval == SOCKET_ERROR) err_quit("listen()");
-
-    ThreadNum++;
 
     return listen_sock;
 }
@@ -80,51 +78,6 @@ DWORD WINAPI MainGameThread(LPVOID arg) {
 
 }
 
-
-// 클라이언트와 데이터 통신
-DWORD WINAPI ProcessClient(LPVOID arg)
-{
-    SOCKET client_sock = (SOCKET)arg;
-    int retval;
-    SOCKADDR_IN clientaddr;
-    int addrlen;
-    char buf[BUFSIZE + 1];
-
-    // 클라이언트 정보 얻기
-    addrlen = sizeof(clientaddr);
-    getpeername(client_sock, (SOCKADDR *)&clientaddr, &addrlen);
-
-    while (1) {
-        // 데이터 받기
-        retval = recv(client_sock, buf, BUFSIZE, 0);
-        if (retval == SOCKET_ERROR) {
-            err_display("recv()");
-            break;
-        }
-        else if (retval == 0)
-            break;
-
-        // 받은 데이터 출력
-        buf[retval] = '\0';
-        printf("[TCP/%s:%d] %s\n", inet_ntoa(clientaddr.sin_addr),
-            ntohs(clientaddr.sin_port), buf);
-
-        // 데이터 보내기
-        retval = send(client_sock, buf, retval, 0);
-        if (retval == SOCKET_ERROR) {
-            err_display("send()");
-            break;
-        }
-    }
-
-    // closesocket()
-    closesocket(client_sock);
-    printf("[TCP 서버] 클라이언트 종료: IP 주소=%s, 포트 번호=%d\n",
-        inet_ntoa(clientaddr.sin_addr), ntohs(clientaddr.sin_port));
-
-    return 0;
-}
-
 int main(int argc, char *argv[])
 {
 
@@ -155,12 +108,13 @@ int main(int argc, char *argv[])
 
 
         // 접속한 클라이언트 정보 출력
-        printf("\n[TCP 서버] 클라이언트 접속: IP 주소=%s, 포트 번호=%d\n",
-            inet_ntoa(clientaddr.sin_addr), ntohs(clientaddr.sin_port));
+        printf("\n[TCP 서버] %d번 클라이언트 접속: IP 주소=%s, 포트 번호=%d\n",
+            ThreadNum, inet_ntoa(clientaddr.sin_addr), ntohs(clientaddr.sin_port));
+
+        ThreadNum++; //ClientNum
 
         // 스레드 생성
-        hThread = CreateThread(NULL, 0, MainGameThread,
-            (LPVOID)client_sock, 0, NULL);
+        hThread = CreateThread(NULL, 0, MainGameThread, (LPVOID)client_sock, 0, NULL);
         if (hThread == NULL) { closesocket(client_sock); }
         else { CloseHandle(hThread); }
     }
@@ -172,7 +126,6 @@ int main(int argc, char *argv[])
     WSACleanup();
     return 0;
 }
-
 
 void err_quit(char* msg)
 {
