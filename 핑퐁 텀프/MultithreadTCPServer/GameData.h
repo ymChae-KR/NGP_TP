@@ -2,9 +2,9 @@
 #include "ServerData.h"
 
 struct sc_packet_mainGame {
-	Point2d p2dPosition;
+	POINT p2dPosition;
 	int iSpeed;
-	float2 fVector;
+	VECTOR2 fVector;
 };
 
 struct sc_packet_EndGame {

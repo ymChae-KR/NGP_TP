@@ -4,10 +4,16 @@
 
 #define MAX_LOADSTRING 100
 
+
 // 전역 변수:
 HINSTANCE hInst;                                // 현재 인스턴스입니다.
 WCHAR szTitle[MAX_LOADSTRING];                  // 제목 표시줄 텍스트입니다.
 WCHAR szWindowClass[MAX_LOADSTRING];            // 기본 창 클래스 이름입니다.
+
+SOCKET sock;
+HANDLE hThread;
+unsigned int CliendID = 0; // 서버에서 결정해주는 클라이언트 번호
+DWORD WINAPI GameThread(LPVOID arg);
 
 global_variable WGameFramework gGameFramework;
 global_variable Render_State render_state;
@@ -71,6 +77,91 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 }
 
 
+void init_Server_Socket() {
+
+    int retval;
+
+    // 윈속 초기화
+    WSADATA wsa;
+    if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
+        err_quit((char*)"connect()");
+
+    // socket()
+    SOCKET sock = socket(AF_INET, SOCK_STREAM, 0);
+    if (sock == INVALID_SOCKET) err_quit((char*)"socket()");
+
+    // connect()
+    SOCKADDR_IN serveraddr;
+    ZeroMemory(&serveraddr, sizeof(serveraddr));
+    serveraddr.sin_family = AF_INET;
+    serveraddr.sin_addr.s_addr = inet_addr(SERVERIP);
+    serveraddr.sin_port = htons(SERVERPORT);
+
+    retval = connect(sock, (SOCKADDR*)&serveraddr, sizeof(serveraddr));
+    if (retval == SOCKET_ERROR) err_quit((char*)"connect()");
+
+	hThread = CreateThread(NULL, 0, GameThread, (LPVOID)sock, 0, NULL);
+	if (hThread == NULL) {
+		closesocket(sock);
+	}
+	else {
+		CloseHandle(hThread);
+	}
+}
+
+DWORD WINAPI GameThread(LPVOID arg) {
+	SOCKET client_sock = (SOCKET)arg;
+	SOCKADDR_IN clientaddr;
+
+	//클라이언트 정보 얻기
+	int addrlen = sizeof(clientaddr);
+	getpeername(client_sock, (SOCKADDR*)&clientaddr, &addrlen);
+
+    // 데이터 통신에 사용할 변수
+    char buf[BUFSIZE + 1];
+    int len;
+    int retval;
+
+    // 서버와 데이터 통신
+    while (1) {
+        // 데이터 입력
+        printf("\n[보낼 데이터] ");
+        if (fgets(buf, BUFSIZE + 1, stdin) == NULL)
+            break;
+
+        // '\n' 문자 제거
+        len = strlen(buf);
+        if (buf[len - 1] == '\n')
+            buf[len - 1] = '\0';
+        if (strlen(buf) == 0)
+            break;
+
+        // 데이터 보내기
+        retval = send(sock, buf, strlen(buf), 0);
+        if (retval == SOCKET_ERROR) {
+            err_display((char*)"send()");
+            break;
+        }
+        printf("[TCP 클라이언트] %d바이트를 보냈습니다.\n", retval);
+
+        // 데이터 받기
+        retval = recvn(sock, buf, retval, 0);
+        if (retval == SOCKET_ERROR) {
+            err_display((char*)"recv()");
+            break;
+        }
+        else if (retval == 0)
+            break;
+
+        // 받은 데이터 출력
+        buf[retval] = '\0';
+        printf("[TCP 클라이언트] %d바이트를 받았습니다.\n", retval);
+        printf("[받은 데이터] %s\n", buf);
+    }
+
+    // closesocket()
+    closesocket(sock);
+}
 
 //
 //  함수: MyRegisterClass()
@@ -192,3 +283,4 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     }
     return 0;
 }
+

@@ -71,6 +71,9 @@
     <ClCompile Include="Ball.cpp">
       <Filter>GameObject</Filter>
     </ClCompile>
+    <ClCompile Include="TCPClient.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Client.rc">
