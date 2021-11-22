@@ -1,7 +1,9 @@
-#pragma once
-#pragma comment(lib, "ws2_32")
 #define _CRT_SECURE_NO_WARNINGS         // 최신 VC++ 컴파일 시 경고 방지
 #define _WINSOCK_DEPRECATED_NO_WARNINGS // 최신 VC++ 컴파일 시 경고 방지
+
+#pragma once
+#pragma comment(lib, "ws2_32")
+
 #include "resource.h"
 #include <winsock2.h>
 #include <stdlib.h>

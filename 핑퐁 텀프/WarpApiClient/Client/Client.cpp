@@ -1,4 +1,5 @@
-﻿#include "stdafx.h"
+﻿
+#include "stdafx.h"
 #include "Client.h"
 #include "GameFramework.h"
 
@@ -14,6 +15,8 @@ SOCKET sock;
 HANDLE hThread;
 unsigned int CliendID = 0; // 서버에서 결정해주는 클라이언트 번호
 DWORD WINAPI GameThread(LPVOID arg);
+char buf[BUFSIZE + 1]; // 데이터 송수신 버퍼
+HANDLE hReadEvent; // 이벤트
 
 global_variable WGameFramework gGameFramework;
 global_variable Render_State render_state;
@@ -42,6 +45,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     UNREFERENCED_PARAMETER(lpCmdLine);
 
     // TODO: 여기에 코드를 입력합니다.
+    // 
+    // 이벤트 생성
+    hReadEvent = CreateEvent(NULL, FALSE, TRUE, NULL);
+    if (hReadEvent == NULL) return 1;
+
+    CreateThread(NULL, 0, GameThread, NULL, 0, NULL);
 
     // 전역 문자열을 초기화합니다.
     LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
@@ -87,8 +96,9 @@ void init_Server_Socket() {
         err_quit((char*)"connect()");
 
     // socket()
-    SOCKET sock = socket(AF_INET, SOCK_STREAM, 0);
-    if (sock == INVALID_SOCKET) err_quit((char*)"socket()");
+    sock = socket(AF_INET, SOCK_STREAM, 0);
+    if (sock == INVALID_SOCKET) 
+        err_quit((char*)"socket()");
 
     // connect()
     SOCKADDR_IN serveraddr;
@@ -98,7 +108,8 @@ void init_Server_Socket() {
     serveraddr.sin_port = htons(SERVERPORT);
 
     retval = connect(sock, (SOCKADDR*)&serveraddr, sizeof(serveraddr));
-    if (retval == SOCKET_ERROR) err_quit((char*)"connect()");
+    if (retval == SOCKET_ERROR) 
+        err_quit((char*)"connect()");
 
 	hThread = CreateThread(NULL, 0, GameThread, (LPVOID)sock, 0, NULL);
 	if (hThread == NULL) {
@@ -118,13 +129,13 @@ DWORD WINAPI GameThread(LPVOID arg) {
 	getpeername(client_sock, (SOCKADDR*)&clientaddr, &addrlen);
 
     // 데이터 통신에 사용할 변수
-    char buf[BUFSIZE + 1];
-    int len;
+
     int retval;
+    int len;
 
     // 서버와 데이터 통신
     while (1) {
-        // 데이터 입력
+
         printf("\n[보낼 데이터] ");
         if (fgets(buf, BUFSIZE + 1, stdin) == NULL)
             break;
@@ -142,7 +153,7 @@ DWORD WINAPI GameThread(LPVOID arg) {
             err_display((char*)"send()");
             break;
         }
-        printf("[TCP 클라이언트] %d바이트를 보냈습니다.\n", retval);
+        printf("[TCP 클라이언트] %d바이트를 보냈습니다.\r\n", retval);
 
         // 데이터 받기
         retval = recvn(sock, buf, retval, 0);
@@ -155,12 +166,11 @@ DWORD WINAPI GameThread(LPVOID arg) {
 
         // 받은 데이터 출력
         buf[retval] = '\0';
-        printf("[TCP 클라이언트] %d바이트를 받았습니다.\n", retval);
-        printf("[받은 데이터] %s\n", buf);
+        printf("[TCP 클라이언트] %d바이트를 받았습니다.\r\n", retval);
+        printf("[받은 데이터] %s\r\n", buf);
+
     }
 
-    // closesocket()
-    closesocket(sock);
 }
 
 //
@@ -230,10 +240,11 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+    
 	switch (message)
 	{
 		case WM_CREATE:
-			{
+        {       init_Server_Socket();
 				gGameFramework.Create(hWnd);
 				SetTimer(hWnd, MAIN_TIMER, MAIN_TIEMR_FRAME, NULL);
 			}
@@ -283,4 +294,3 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     }
     return 0;
 }
-
