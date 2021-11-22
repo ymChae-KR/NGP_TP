@@ -33,10 +33,6 @@ void WGameFramework::OnDraw(HDC hdc)
 	Rectangle(hdc, m_pPlayer->getPlayerPoint().x + 10, m_pPlayer->getPlayerPoint().y + 10,
 		m_pPlayer->getPlayerPoint().x + 40, m_pPlayer->getPlayerPoint().y + 100);
 
-	//static int x = 1;
-	//x++;
-	//Ellipse(hdc, x + 10, 10, x + 100, 100);
-
 }
 
 void WGameFramework::OnUpdate(const float frameTime)

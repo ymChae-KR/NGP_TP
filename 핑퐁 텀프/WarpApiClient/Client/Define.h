@@ -64,3 +64,16 @@ clamp(int min, int val, int max) {
 	if (val > max) return max;
 	return val;
 }
+
+struct VECTOR2
+{
+	float x;
+	float y;
+};
+
+struct cs_packet_mainGame
+{
+	int iPlayerID;
+	VECTOR2 ptPos;
+};
+

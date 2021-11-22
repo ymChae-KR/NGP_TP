@@ -1,10 +1,4 @@
 #pragma once
-struct VECTOR2
-{
-	float x;
-	float y;
-};
-
 class Ball
 {
 private:

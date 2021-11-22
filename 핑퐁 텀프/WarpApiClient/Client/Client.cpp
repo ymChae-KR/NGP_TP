@@ -1,5 +1,4 @@
-﻿
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "Client.h"
 #include "GameFramework.h"
 
@@ -112,10 +111,12 @@ void init_Server_Socket() {
         err_quit((char*)"connect()");
 
 	hThread = CreateThread(NULL, 0, GameThread, (LPVOID)sock, 0, NULL);
-	if (hThread == NULL) {
+	if (hThread == NULL) 
+    {
 		closesocket(sock);
 	}
-	else {
+	else 
+    {
 		CloseHandle(hThread);
 	}
 }
@@ -134,21 +135,15 @@ DWORD WINAPI GameThread(LPVOID arg) {
     int len;
 
     // 서버와 데이터 통신
-    while (1) {
-
-        printf("\n[보낼 데이터] ");
-        if (fgets(buf, BUFSIZE + 1, stdin) == NULL)
-            break;
-
-        // '\n' 문자 제거
-        len = strlen(buf);
-        if (buf[len - 1] == '\n')
-            buf[len - 1] = '\0';
-        if (strlen(buf) == 0)
-            break;
+    while (1) 
+    {
 
         // 데이터 보내기
-        retval = send(sock, buf, strlen(buf), 0);
+        cs_packet_mainGame packet{};
+
+        retval = send(sock, (char*)&packet , sizeof(cs_packet_mainGame), 0);
+        //retval = send(sock, buf, strlen(buf), 0);
+
         if (retval == SOCKET_ERROR) {
             err_display((char*)"send()");
             break;
@@ -167,7 +162,7 @@ DWORD WINAPI GameThread(LPVOID arg) {
         // 받은 데이터 출력
         buf[retval] = '\0';
         printf("[TCP 클라이언트] %d바이트를 받았습니다.\r\n", retval);
-        printf("[받은 데이터] %s\r\n", buf);
+        //printf("[받은 데이터] %s\r\n", buf);
 
     }
 
@@ -244,11 +239,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	switch (message)
 	{
 		case WM_CREATE:
-        {       init_Server_Socket();
-				gGameFramework.Create(hWnd);
-				SetTimer(hWnd, MAIN_TIMER, MAIN_TIEMR_FRAME, NULL);
-			}
-			break;
+        {       
+            init_Server_Socket();
+			gGameFramework.Create(hWnd);
+			SetTimer(hWnd, MAIN_TIMER, MAIN_TIEMR_FRAME, NULL);
+		}
+		break;
 
 		case WM_PAINT:
 		{
