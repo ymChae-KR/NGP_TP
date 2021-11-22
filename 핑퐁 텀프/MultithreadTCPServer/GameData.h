@@ -1,13 +1,26 @@
 #pragma once
 #include "ServerData.h"
 
-struct sc_packet_mainGame {
-	POINT p2dPosition;
-	int iSpeed;
-	VECTOR2 fVector;
+struct VECTOR2
+{
+	float x;
+	float y;
 };
 
-struct sc_packet_EndGame {
+struct ID
+{
+	SOCKADDR_IN		sc_Client_Address;
+	UINT			uiID;
+};
+
+struct sc_packet_mainGame
+{
+	VECTOR2		vec2Pos;
+	UINT		uiPlayerID;
+};	//	플레이어간 동기화 구현 완료 후 패킷 재조립 예정
+
+struct sc_packet_EndGame 
+{
 	bool bResult;
 };
 

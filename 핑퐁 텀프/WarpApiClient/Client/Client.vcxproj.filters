@@ -54,6 +54,9 @@
     <ClInclude Include="render_Func.h">
       <Filter>defnie</Filter>
     </ClInclude>
+    <ClInclude Include="func.h">
+      <Filter>defnie</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">

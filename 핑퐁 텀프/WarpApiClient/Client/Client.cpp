@@ -137,7 +137,6 @@ DWORD WINAPI GameThread(LPVOID arg) {
     // 서버와 데이터 통신
     while (1) 
     {
-
         // 데이터 보내기
         cs_packet_mainGame packet{};
 
@@ -289,4 +288,27 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			return DefWindowProc(hWnd, message, wParam, lParam);
     }
     return 0;
+}
+
+void Send_Packet(void* _packet)
+{
+    char* packet = reinterpret_cast<char*>(_packet);
+    int retval;
+
+	// 데이터 보내기
+	//cs_packet_mainGame packet{};
+
+	retval = send(sock, (char*)&packet, sizeof(packet[0]), 0);
+
+	if (retval == SOCKET_ERROR)
+	{
+		err_display((char*)"send()");
+		return;
+	}
+
+	printf("[TCP 클라이언트] %d바이트를 보냈습니다.\r\n", retval);
+    
+    //  플레이어 움직임 테스트용 cout 로그
+    cout << "x : " << reinterpret_cast<cs_packet_mainGame*>(_packet)->ptPos.x << "y : " << reinterpret_cast<cs_packet_mainGame*>(_packet)->ptPos.y << endl;
+
 }

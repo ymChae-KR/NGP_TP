@@ -151,6 +151,7 @@
     <ClInclude Include="Ball.h" />
     <ClInclude Include="Client.h" />
     <ClInclude Include="define.h" />
+    <ClInclude Include="func.h" />
     <ClInclude Include="GameFramework.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="render_Func.h" />

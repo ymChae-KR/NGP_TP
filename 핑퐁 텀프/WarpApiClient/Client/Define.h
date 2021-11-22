@@ -73,7 +73,7 @@ struct VECTOR2
 
 struct cs_packet_mainGame
 {
-	int iPlayerID;
 	VECTOR2 ptPos;
+	UINT uiPlayerID;
 };
 
