@@ -5,6 +5,11 @@
 WGameFramework::WGameFramework()
 {
 	Clear();
+	m_pPlayer = new Player;
+	m_pEnemy = new Player;
+
+	m_pPlayer->SetPlayerPoint(VECTOR2(0.f, 0.f));
+	m_pEnemy->SetPlayerPoint(VECTOR2(0.f, 0.f));
 }
 
 WGameFramework::~WGameFramework()
@@ -22,10 +27,23 @@ void WGameFramework::Clear()
 void WGameFramework::Create(HWND hWnd)
 {
 	m_hWnd = hWnd;
-	m_pPlayer = new Player;
+	
 	
 	// 플레이어 ID값 별로 분기 해서 컨트롤할 플레이어 지정해야함
-	m_pPlayer->SetPlayerPoint(POINT(10, 10));
+	if (m_uiID == 0)
+	{
+		m_pPlayer->SetPlayerPoint(VECTOR2(10, 10));
+		m_pEnemy->SetPlayerPoint(VECTOR2(1200, 10));
+	}
+	else if (m_uiID == 1)
+	{
+		m_pPlayer->SetPlayerPoint(VECTOR2(1200, 10));
+		m_pEnemy->SetPlayerPoint(VECTOR2(10, 10));
+	}
+	else
+	{
+		cout << "플레이어 ID 값 오류" << endl;
+	}
 }
 
 void WGameFramework::OnDraw(HDC hdc)
@@ -33,9 +51,8 @@ void WGameFramework::OnDraw(HDC hdc)
 	Rectangle(hdc, m_pPlayer->getPlayerPoint().x + 10, m_pPlayer->getPlayerPoint().y + 10,
 		m_pPlayer->getPlayerPoint().x + 40, m_pPlayer->getPlayerPoint().y + 100);
 
-	//static int x = 1;
-	//x++;
-	//Ellipse(hdc, x + 10, 10, x + 100, 100);
+	Rectangle(hdc, m_pEnemy->getPlayerPoint().x + 10, m_pEnemy->getPlayerPoint().y + 10,
+		m_pEnemy->getPlayerPoint().x + 40, m_pEnemy->getPlayerPoint().y + 100);
 
 }
 
@@ -57,9 +74,9 @@ void WGameFramework::KeyBoard(UINT iMessage, WPARAM wParam, LPARAM lParam)
 			}
 
 			if (GetAsyncKeyState(VK_UP))
-				m_pPlayer->SetPlayerPoint(POINT(m_pPlayer->getPlayerPoint().x ,m_pPlayer->getPlayerPoint().y - 10.f));
+				m_pPlayer->SetPlayerPoint(VECTOR2(m_pPlayer->getPlayerPoint().x ,m_pPlayer->getPlayerPoint().y - 10.f));
 			if (GetAsyncKeyState(VK_DOWN))
-				m_pPlayer->SetPlayerPoint(POINT(m_pPlayer->getPlayerPoint().x, m_pPlayer->getPlayerPoint().y + 10.f));
+				m_pPlayer->SetPlayerPoint(VECTOR2(m_pPlayer->getPlayerPoint().x, m_pPlayer->getPlayerPoint().y + 10.f));
 
 		}
 		break;

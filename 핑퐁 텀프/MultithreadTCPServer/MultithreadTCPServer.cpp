@@ -1,18 +1,23 @@
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 
 #include "ServerData.h"
+#include "GameData.h"
 
 void err_quit(char* msg);
 void err_display(char* msg);
+void Send_Packet(void* _packet, SOCKET _sock);
 DWORD WINAPI MainGameThread(LPVOID arg);
 DWORD WINAPI EndGameThread(LPVOID arg);
 
+SOCKET listen_sock;
 unsigned int ThreadNum = 1;
 
 //MainGame::BallUpdate()
 //MainGame::notifyCollisions()
-
 //MainGame::playerUpdate(POINT p2dPosition)
+
+ID g_clientIDManager[2]{};    //  클라이언트 ID 부여 후 이를 관리할 컨테이너, 차후에 서버 프로젝트의 mainGame 안에서 관리 할 예정
+UINT g_uiIDCnt{ 0 };
 
 SOCKET init_Client_Socket(SOCKET listen_sock) {
 
@@ -40,7 +45,7 @@ DWORD WINAPI MainGameThread(LPVOID arg) {
     int retval;
     SOCKADDR_IN clientaddr;
     int addrlen;
-    char buf[BUFSIZE + 1];
+    char buf[BUFSIZE + 1]{};
 
     // 클라이언트 정보 얻기
     addrlen = sizeof(clientaddr);
@@ -56,13 +61,10 @@ DWORD WINAPI MainGameThread(LPVOID arg) {
         else if (retval == 0)
             break;
 
-        // 받은 데이터 출력
-        buf[retval] = '\0';
-        printf("[TCP/%s:%d] %s\n", inet_ntoa(clientaddr.sin_addr),
-            ntohs(clientaddr.sin_port), buf);
 
         // 데이터 보내기
-        retval = send(client_sock, buf, retval, 0);
+        cs_packet_mainGame* data = reinterpret_cast<cs_packet_mainGame*>(buf);
+        retval = send(client_sock, (char*)data, retval, 0);
         if (retval == SOCKET_ERROR) {
             err_display("send()");
             break;
@@ -73,6 +75,10 @@ DWORD WINAPI MainGameThread(LPVOID arg) {
     closesocket(client_sock);
     printf("[TCP 서버] 클라이언트 종료: IP 주소=%s, 포트 번호=%d\n",
         inet_ntoa(clientaddr.sin_addr), ntohs(clientaddr.sin_port));
+
+    g_clientIDManager[g_uiIDCnt].sc_Client_Address = SOCKADDR_IN();
+    g_clientIDManager[g_uiIDCnt].uiID = 0;
+    --g_uiIDCnt;
 
     return 0;
 
@@ -86,7 +92,7 @@ int main(int argc, char *argv[])
     if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
         return 1;
 
-    SOCKET listen_sock = socket(AF_INET, SOCK_STREAM, 0);
+    listen_sock = socket(AF_INET, SOCK_STREAM, 0);
     if (listen_sock == INVALID_SOCKET) err_quit("socket()");
 
     // 데이터 통신에 사용할 변수
@@ -112,6 +118,14 @@ int main(int argc, char *argv[])
             ThreadNum, inet_ntoa(clientaddr.sin_addr), ntohs(clientaddr.sin_port));
 
         ThreadNum++; //ClientNum
+
+        g_clientIDManager[g_uiIDCnt].sc_Client_Address = clientaddr;
+        g_clientIDManager[g_uiIDCnt].uiID = g_uiIDCnt++;
+        sc_packet_mainGame packet{};
+        packet.uiPlayerID = g_clientIDManager[g_uiIDCnt - 1].uiID;
+        
+        Send_Packet(&packet, client_sock);
+        cout << g_uiIDCnt << "번째 클라이언트 접속 후 클라 ID 송신" << endl;
 
         // 스레드 생성
         hThread = CreateThread(NULL, 0, MainGameThread, (LPVOID)client_sock, 0, NULL);
@@ -150,4 +164,22 @@ void err_display(char* msg)
         (LPTSTR)&lpMsgBuf, 0, NULL);
     printf("[%s] %s", msg, (char*)lpMsgBuf);
     LocalFree(lpMsgBuf);
+}
+
+void Send_Packet(void* _packet, SOCKET _sock)
+{
+    char* packet = reinterpret_cast<char*>(_packet);
+    int retval;
+
+    // 데이터 보내기
+    retval = send(_sock, (char*)&packet, sizeof(packet[0]), 0);
+
+    if (retval == SOCKET_ERROR)
+    {
+        err_display((char*)"send()");
+        return;
+    }
+
+    printf("[TCP 서버] %d바이트를 보냈습니다.\r\n", retval);
+
 }
