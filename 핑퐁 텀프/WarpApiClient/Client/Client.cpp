@@ -10,12 +10,13 @@ HINSTANCE hInst;                                // 현재 인스턴스입니다.
 WCHAR szTitle[MAX_LOADSTRING];                  // 제목 표시줄 텍스트입니다.
 WCHAR szWindowClass[MAX_LOADSTRING];            // 기본 창 클래스 이름입니다.
 
-SOCKET sock;
+SOCKET client_sock;
+//SOCKET sock;
 HANDLE hThread;
 unsigned int CliendID = 0; // 서버에서 결정해주는 클라이언트 번호
 DWORD WINAPI GameThread(LPVOID arg);
 char buf[BUFSIZE + 1]; // 데이터 송수신 버퍼
-HANDLE hReadEvent; // 이벤트
+HANDLE hEvent; // 이벤트
 
 global_variable WGameFramework gGameFramework;
 global_variable Render_State render_state;
@@ -27,11 +28,11 @@ LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
-                     _In_opt_ HINSTANCE hPrevInstance,
-                     _In_ LPWSTR    lpCmdLine,
-                     _In_ int       nCmdShow)
+    _In_opt_ HINSTANCE hPrevInstance,
+    _In_ LPWSTR    lpCmdLine,
+    _In_ int       nCmdShow)
 {
- // 편한 디버깅 환경을 제공하기 위해, 디버그 모드일 때, 콘솔창을 켜줍니다.
+    // 편한 디버깅 환경을 제공하기 위해, 디버그 모드일 때, 콘솔창을 켜줍니다.
 #ifdef _DEBUG
 #ifdef UNICODE
 #pragma comment(linker, "/entry:wWinMainCRTStartup /subsystem:console") 
@@ -45,11 +46,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     // TODO: 여기에 코드를 입력합니다.
     // 
-    // 이벤트 생성
-    hReadEvent = CreateEvent(NULL, FALSE, TRUE, NULL);
-    if (hReadEvent == NULL) return 1;
+    //// 이벤트 생성
+    //hEvent = CreateEvent(NULL, FALSE, TRUE, NULL);
+    //if (hEvent == NULL) return 1;
 
-    CreateThread(NULL, 0, GameThread, NULL, 0, NULL);
+    //CreateThread(NULL, 0, GameThread, NULL, 0, NULL);
 
     // 전역 문자열을 초기화합니다.
     LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
@@ -57,7 +58,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     MyRegisterClass(hInstance);
 
     // 응용 프로그램 초기화를 수행합니다:
-    if (!InitInstance (hInstance, nCmdShow))
+    if (!InitInstance(hInstance, nCmdShow))
     {
         return FALSE;
     }
@@ -66,22 +67,22 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     MSG msg;
 
-	while (true)
-	{
-		if (::PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
-		{
-			if (msg.message == WM_QUIT) break;
-			if (!::TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
-			{
-				::TranslateMessage(&msg);
-				::DispatchMessage(&msg);
-			}
-		}
-	}
+    while (true)
+    {
+        if (::PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+        {
+            if (msg.message == WM_QUIT) break;
+            if (!::TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
+            {
+                ::TranslateMessage(&msg);
+                ::DispatchMessage(&msg);
+            }
+        }
+    }
 
-	gGameFramework.Clear();
+    gGameFramework.Clear();
 
-    return (int) msg.wParam;
+    return (int)msg.wParam;
 }
 
 
@@ -95,8 +96,8 @@ void init_Server_Socket() {
         err_quit((char*)"connect()");
 
     // socket()
-    sock = socket(AF_INET, SOCK_STREAM, 0);
-    if (sock == INVALID_SOCKET) 
+    SOCKET sock = socket(AF_INET, SOCK_STREAM, 0);
+    if (sock == INVALID_SOCKET)
         err_quit((char*)"socket()");
 
     // connect()
@@ -107,27 +108,27 @@ void init_Server_Socket() {
     serveraddr.sin_port = htons(SERVERPORT);
 
     retval = connect(sock, (SOCKADDR*)&serveraddr, sizeof(serveraddr));
-    if (retval == SOCKET_ERROR) 
+    if (retval == SOCKET_ERROR)
         err_quit((char*)"connect()");
 
-	hThread = CreateThread(NULL, 0, GameThread, (LPVOID)sock, 0, NULL);
-	if (hThread == NULL) 
+    hThread = CreateThread(NULL, 0, GameThread, (LPVOID)sock, 0, NULL);
+    if (hThread == NULL)
     {
-		closesocket(sock);
-	}
-	else 
+        closesocket(sock);
+    }
+    else
     {
-		CloseHandle(hThread);
-	}
+        CloseHandle(hThread);
+    }
 }
 
 DWORD WINAPI GameThread(LPVOID arg) {
-	SOCKET client_sock = (SOCKET)arg;
-	SOCKADDR_IN clientaddr;
+    client_sock = (SOCKET)arg;
+    SOCKADDR_IN clientaddr;
 
-	//클라이언트 정보 얻기
-	int addrlen = sizeof(clientaddr);
-	getpeername(client_sock, (SOCKADDR*)&clientaddr, &addrlen);
+    //클라이언트 정보 얻기
+    int addrlen = sizeof(clientaddr);
+    getpeername(client_sock, (SOCKADDR*)&clientaddr, &addrlen);
 
     // 데이터 통신에 사용할 변수
 
@@ -135,14 +136,15 @@ DWORD WINAPI GameThread(LPVOID arg) {
     int len;
 
     // 서버와 데이터 통신
-    while (1) 
+    while (1)
     {
         // 데이터 보내기
         cs_packet_mainGame packet{};
         packet.ptPos = gGameFramework.GetPlayerPos();
         packet.uiPlayerID = gGameFramework.GetID();
 
-        retval = send(sock, (char*)&packet , sizeof(cs_packet_mainGame), 0);
+        //고정 길이
+        retval = send(client_sock, (char*)&packet, sizeof(cs_packet_mainGame), 0);
         //retval = send(sock, buf, strlen(buf), 0);
 
         if (retval == SOCKET_ERROR) {
@@ -152,7 +154,7 @@ DWORD WINAPI GameThread(LPVOID arg) {
         printf("[TCP 클라이언트] %d바이트를 보냈습니다.\r\n", retval);
 
         // 데이터 받기
-        retval = recvn(sock, buf, retval, 0);
+        retval = recvn(client_sock, buf, retval, 0);
         if (retval == SOCKET_ERROR) {
             err_display((char*)"recv()");
             break;
@@ -183,17 +185,17 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 
     wcex.cbSize = sizeof(WNDCLASSEX);
 
-    wcex.style          = CS_HREDRAW | CS_VREDRAW;
-    wcex.lpfnWndProc    = WndProc;
-    wcex.cbClsExtra     = 0;
-    wcex.cbWndExtra     = 0;
-    wcex.hInstance      = hInstance;
-    wcex.hIcon          = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_WARP));
-    wcex.hCursor        = LoadCursor(nullptr, IDC_ARROW);
-    wcex.hbrBackground  = (HBRUSH)(COLOR_WINDOW+1);
-    wcex.lpszMenuName   = MAKEINTRESOURCEW(IDC_CLIENT);
-    wcex.lpszClassName  = szWindowClass;
-    wcex.hIconSm        = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_WARP));
+    wcex.style = CS_HREDRAW | CS_VREDRAW;
+    wcex.lpfnWndProc = WndProc;
+    wcex.cbClsExtra = 0;
+    wcex.cbWndExtra = 0;
+    wcex.hInstance = hInstance;
+    wcex.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_WARP));
+    wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
+    wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+    wcex.lpszMenuName = MAKEINTRESOURCEW(IDC_CLIENT);
+    wcex.lpszClassName = szWindowClass;
+    wcex.hIconSm = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_WARP));
 
     return RegisterClassExW(&wcex);
 }
@@ -210,20 +212,20 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 //
 BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
-   hInst = hInstance; // 인스턴스 핸들을 전역 변수에 저장합니다.
+    hInst = hInstance; // 인스턴스 핸들을 전역 변수에 저장합니다.
 
-   HWND hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
-      CW_USEDEFAULT, 0, FRAME_WIDTH, FRAME_HEIGHT, nullptr, nullptr, hInstance, nullptr);
+    HWND hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
+        CW_USEDEFAULT, 0, FRAME_WIDTH, FRAME_HEIGHT, nullptr, nullptr, hInstance, nullptr);
 
-   if (!hWnd)
-   {
-      return FALSE;
-   }
+    if (!hWnd)
+    {
+        return FALSE;
+    }
 
-   ShowWindow(hWnd, nCmdShow);
-   UpdateWindow(hWnd);
+    ShowWindow(hWnd, nCmdShow);
+    UpdateWindow(hWnd);
 
-   return TRUE;
+    return TRUE;
 }
 
 //
@@ -239,58 +241,58 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-    
-	switch (message)
-	{
-		case WM_CREATE:
-        {       
-            init_Server_Socket();
-			gGameFramework.Create(hWnd);
-			SetTimer(hWnd, MAIN_TIMER, MAIN_TIEMR_FRAME, NULL);
-		}
-		break;
 
-		case WM_PAINT:
-		{
-			PAINTSTRUCT ps;
-			HDC mainHDC = BeginPaint(hWnd, &ps);
-			HBITMAP GLay = CreateCompatibleBitmap(mainHDC, FRAME_WIDTH, FRAME_HEIGHT);
-			HDC GLayDC = CreateCompatibleDC(mainHDC);
-			SelectObject(GLayDC, GLay);
+    switch (message)
+    {
+    case WM_CREATE:
+    {
+        init_Server_Socket();
+        gGameFramework.Create(hWnd);
+        SetTimer(hWnd, MAIN_TIMER, MAIN_TIEMR_FRAME, NULL);
+    }
+    break;
 
-			gGameFramework.OnDraw(GLayDC);
+    case WM_PAINT:
+    {
+        PAINTSTRUCT ps;
+        HDC mainHDC = BeginPaint(hWnd, &ps);
+        HBITMAP GLay = CreateCompatibleBitmap(mainHDC, FRAME_WIDTH, FRAME_HEIGHT);
+        HDC GLayDC = CreateCompatibleDC(mainHDC);
+        SelectObject(GLayDC, GLay);
 
-			BitBlt(mainHDC, 0, 0, FRAME_WIDTH, FRAME_HEIGHT, GLayDC, 0, 0, SRCCOPY);
-			DeleteDC(GLayDC);
-			DeleteObject(GLay);
-			EndPaint(hWnd, &ps);
-		}
-		break;
+        gGameFramework.OnDraw(GLayDC);
 
-		case WM_TIMER:
-		{
-			gGameFramework.OnUpdate();
-			InvalidateRgn(hWnd, NULL, false);
-		}
-		break;
-		
+        BitBlt(mainHDC, 0, 0, FRAME_WIDTH, FRAME_HEIGHT, GLayDC, 0, 0, SRCCOPY);
+        DeleteDC(GLayDC);
+        DeleteObject(GLay);
+        EndPaint(hWnd, &ps);
+    }
+    break;
 
-		case WM_KEYDOWN:
-		case WM_KEYUP:
-		{
-			gGameFramework.KeyBoard(message, wParam, lParam);
-		}
-		break;
+    case WM_TIMER:
+    {
+        gGameFramework.OnUpdate();
+        InvalidateRgn(hWnd, NULL, false);
+    }
+    break;
 
 
-		case WM_DESTROY:
-		{	
-			PostQuitMessage(0);
-		}
-		break;
+    case WM_KEYDOWN:
+    case WM_KEYUP:
+    {
+        gGameFramework.KeyBoard(message, wParam, lParam);
+    }
+    break;
 
-		default:
-			return DefWindowProc(hWnd, message, wParam, lParam);
+
+    case WM_DESTROY:
+    {
+        PostQuitMessage(0);
+    }
+    break;
+
+    default:
+        return DefWindowProc(hWnd, message, wParam, lParam);
     }
     return 0;
 }
@@ -300,19 +302,19 @@ void Send_Packet(void* _packet)
     char* packet = reinterpret_cast<char*>(_packet);
     int retval;
 
-	// 데이터 보내기
-	//cs_packet_mainGame packet{};
+    // 데이터 보내기
+    //cs_packet_mainGame packet{};
 
-	retval = send(sock, (char*)&packet, sizeof(packet[0]), 0);
+    retval = send(client_sock, (char*)&packet, sizeof(packet[0]), 0);
 
-	if (retval == SOCKET_ERROR)
-	{
-		err_display((char*)"send()");
-		return;
-	}
+    if (retval == SOCKET_ERROR)
+    {
+        err_display((char*)"send()");
+        return;
+    }
 
-	printf("[TCP 클라이언트] %d바이트를 보냈습니다.\r\n", retval);
-    
+    printf("[TCP 클라이언트] %d바이트를 보냈습니다.\r\n", retval);
+
     //  플레이어 움직임 테스트용 cout 로그
     cout << "x : " << reinterpret_cast<cs_packet_mainGame*>(_packet)->ptPos.x << "y : " << reinterpret_cast<cs_packet_mainGame*>(_packet)->ptPos.y << endl;
 
