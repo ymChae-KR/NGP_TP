@@ -10,6 +10,8 @@ DWORD WINAPI MainGameThread(LPVOID arg);
 DWORD WINAPI EndGameThread(LPVOID arg);
 
 SOCKET listen_sock;
+HANDLE hSendEvent; // 전송 완료 이벤트
+HANDLE hRecvEvent; // 수신 완료 이벤트
 unsigned int ThreadNum = 1;
 
 //MainGame::BallUpdate()
@@ -69,6 +71,11 @@ DWORD WINAPI MainGameThread(LPVOID arg) {
             err_display("send()");
             break;
         }
+
+        // 받은 데이터 출력
+        //buf[retval] = '\0';
+        printf("[TCP/%s:%d] %s\n", inet_ntoa(clientaddr.sin_addr),
+            ntohs(clientaddr.sin_port), buf);
     }
 
     // closesocket()
@@ -84,7 +91,7 @@ DWORD WINAPI MainGameThread(LPVOID arg) {
 
 }
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
 
     //윈속 초기화
@@ -106,7 +113,7 @@ int main(int argc, char *argv[])
     while (1) {
         // accept()
         addrlen = sizeof(clientaddr);
-        client_sock = accept(listen_sock, (SOCKADDR *)&clientaddr, &addrlen);
+        client_sock = accept(listen_sock, (SOCKADDR*)&clientaddr, &addrlen);
         if (client_sock == INVALID_SOCKET) {
             err_display("accept()");
             break;
@@ -123,7 +130,7 @@ int main(int argc, char *argv[])
         g_clientIDManager[g_uiIDCnt].uiID = g_uiIDCnt++;
         sc_packet_mainGame packet{};
         packet.uiPlayerID = g_clientIDManager[g_uiIDCnt - 1].uiID;
-        
+
         Send_Packet(&packet, client_sock);
         cout << g_uiIDCnt << "번째 클라이언트 접속 후 클라 ID 송신" << endl;
 
@@ -168,6 +175,12 @@ void err_display(char* msg)
 
 void Send_Packet(void* _packet, SOCKET _sock)
 {
+
+    ////수신 완료 대기 이벤트
+    //DWORD hEvent;
+    //hEvent = WaitForSingleObject(hRecvEvent, INFINITE);
+    //if (hEvent != WAIT_OBJECT_0) return;
+
     char* packet = reinterpret_cast<char*>(_packet);
     int retval;
 
