@@ -66,7 +66,7 @@ DWORD WINAPI MainGameThread(LPVOID arg) {
 
         // 데이터 보내기
         cs_packet_mainGame* data = reinterpret_cast<cs_packet_mainGame*>(buf);
-        retval = send(client_sock, (char*)data, retval, 0);
+        retval = send(client_sock, (char*)data, sizeof(data), 0);
         if (retval == SOCKET_ERROR) {
             err_display("send()");
             break;

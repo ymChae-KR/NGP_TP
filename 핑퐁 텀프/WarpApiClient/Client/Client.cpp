@@ -154,7 +154,7 @@ DWORD WINAPI GameThread(LPVOID arg) {
         printf("[TCP 클라이언트] %d바이트를 보냈습니다.\r\n", retval);
 
         // 데이터 받기
-        retval = recvn(client_sock, buf, retval, 0);
+        retval = recvn(client_sock, buf, sizeof(packet), 0);
         if (retval == SOCKET_ERROR) {
             err_display((char*)"recv()");
             break;
