@@ -18,8 +18,9 @@ unsigned int ThreadNum = 1;
 //MainGame::notifyCollisions()
 //MainGame::playerUpdate(POINT p2dPosition)
 
-ID g_clientIDManager[2]{};    //  클라이언트 ID 부여 후 이를 관리할 컨테이너, 차후에 서버 프로젝트의 mainGame 안에서 관리 할 예정
-UINT g_uiIDCnt{ 0 };
+ID g_clientIDManager[2]{};      //  클라이언트 ID 부여 후 이를 관리할 컨테이너, 차후에 서버 프로젝트의 mainGame 안에서 관리 할 예정
+UINT g_uiIDCnt{ 0 };            //  각 클라이언트 ID 부여를 위한 Count
+BOOL g_bGameStart{ false };     //  게임 시작 여부 확인 변수
 
 SOCKET init_Client_Socket(SOCKET listen_sock) {
 
@@ -93,7 +94,6 @@ DWORD WINAPI MainGameThread(LPVOID arg) {
 
 int main(int argc, char* argv[])
 {
-
     //윈속 초기화
     WSADATA wsa;
     if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
@@ -108,9 +108,10 @@ int main(int argc, char* argv[])
     int addrlen;
     HANDLE hThread;
 
-    printf("listening...");
+    printf("listening...\n");
 
-    while (1) {
+    while (1) 
+    {
         // accept()
         addrlen = sizeof(clientaddr);
         client_sock = accept(listen_sock, (SOCKADDR*)&clientaddr, &addrlen);
@@ -119,20 +120,19 @@ int main(int argc, char* argv[])
             break;
         }
 
-
         // 접속한 클라이언트 정보 출력
         printf("\n[TCP 서버] %d번 클라이언트 접속: IP 주소=%s, 포트 번호=%d\n",
             ThreadNum, inet_ntoa(clientaddr.sin_addr), ntohs(clientaddr.sin_port));
 
         ThreadNum++; //ClientNum
 
-        g_clientIDManager[g_uiIDCnt].sc_Client_Address = clientaddr;
+        /*g_clientIDManager[g_uiIDCnt].sc_Client_Address = clientaddr;
         g_clientIDManager[g_uiIDCnt].uiID = g_uiIDCnt++;
         sc_packet_mainGame packet{};
         packet.uiPlayerID = g_clientIDManager[g_uiIDCnt - 1].uiID;
 
         Send_Packet(&packet, client_sock);
-        cout << g_uiIDCnt << "번째 클라이언트 접속 후 클라 ID 송신" << endl;
+        cout << g_uiIDCnt << "번째 클라이언트 접속 후 클라 ID 송신" << endl;*/
 
         // 스레드 생성
         hThread = CreateThread(NULL, 0, MainGameThread, (LPVOID)client_sock, 0, NULL);

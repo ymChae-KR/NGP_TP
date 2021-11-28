@@ -2,6 +2,22 @@
 #include "GameFramework.h"
 
 
+void WGameFramework::SetPlayerData(cs_packet_mainGame _packet)
+{
+	m_uiID = _packet.uiPlayerID;
+	m_pPlayer->SetPlayerPoint(_packet.ptPos);
+}
+
+void WGameFramework::SetClientID(UINT _ID)
+{
+	m_uiID = _ID;
+}
+
+void WGameFramework::SetPlayerPos(cs_packet_mainGame _packet)
+{
+	m_pEnemy->SetPlayerPoint(_packet.ptPos);
+}
+
 WGameFramework::WGameFramework()
 {
 	Clear();
@@ -27,7 +43,7 @@ void WGameFramework::Clear()
 void WGameFramework::Create(HWND hWnd)
 {
 	m_hWnd = hWnd;
-	
+	 
 	
 	// 플레이어 ID값 별로 분기 해서 컨트롤할 플레이어 지정해야함
 	if (m_uiID == 0)

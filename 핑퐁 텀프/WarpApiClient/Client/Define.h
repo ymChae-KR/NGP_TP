@@ -5,6 +5,14 @@
 #define FRAME_WIDTH			1280
 #define FRAME_HEIGHT		720
 
+enum PACKET_TYPE
+{
+	NONE,
+	START,
+	MAIN,
+
+};
+
 // KeyBoard
 enum VK_KEY
 {
@@ -73,12 +81,14 @@ struct VECTOR2
 
 struct cs_packet_mainGame
 {
+	PACKET_TYPE pkType;
 	VECTOR2 ptPos;
 	UINT uiPlayerID;
 };
 
 struct sc_packet_mainGame
 {
+	PACKET_TYPE pkType;
 	VECTOR2		vec2Pos;
 	UINT		uiPlayerID;
 };
