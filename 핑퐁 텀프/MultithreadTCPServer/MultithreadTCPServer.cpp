@@ -5,6 +5,7 @@
 
 void err_quit(char* msg);
 void err_display(char* msg);
+int recvn(SOCKET s, char* buf, int len, int flags);
 void Send_Packet(void* _packet, SOCKET _sock);
 DWORD WINAPI MainGameThread(LPVOID arg);
 DWORD WINAPI EndGameThread(LPVOID arg);
@@ -21,7 +22,7 @@ unsigned int ThreadNum = 1;
 ID g_clientIDManager[2]{};    //  클라이언트 ID 부여 후 이를 관리할 컨테이너, 차후에 서버 프로젝트의 mainGame 안에서 관리 할 예정
 UINT g_uiIDCnt{ 0 };
 
-SOCKET init_Client_Socket(SOCKET listen_sock) {
+SOCKET init_Client_Socket(SOCKET listen_sock) { //연결용 소켓 생성
 
     int retval;
 
@@ -44,8 +45,9 @@ SOCKET init_Client_Socket(SOCKET listen_sock) {
 DWORD WINAPI MainGameThread(LPVOID arg) {
 
     SOCKET client_sock = (SOCKET)arg;
-    int retval;
     SOCKADDR_IN clientaddr;
+
+    int retval;
     int addrlen;
     char buf[BUFSIZE + 1]{};
 
@@ -53,9 +55,16 @@ DWORD WINAPI MainGameThread(LPVOID arg) {
     addrlen = sizeof(clientaddr);
     getpeername(client_sock, (SOCKADDR*)&clientaddr, &addrlen);
 
+    //구조체 크기를 먼저 보낸다
+    /*int len = sizeof(CLIENTINFO);
+    retval = send(client_sock, (char*)&len, len, 0);
+    if (retval == SOCKET_ERROR) {
+        err_display("send()");
+    }*/
+
     while (1) {
         // 데이터 받기
-        retval = recv(client_sock, buf, BUFSIZE, 0);
+        retval = recvn(client_sock, buf, BUFSIZE, 0);
         if (retval == SOCKET_ERROR) {
             err_display("recv()");
             break;
@@ -66,14 +75,14 @@ DWORD WINAPI MainGameThread(LPVOID arg) {
 
         // 데이터 보내기
         cs_packet_mainGame* data = reinterpret_cast<cs_packet_mainGame*>(buf);
-        retval = send(client_sock, (char*)data, sizeof(data), 0);
+        retval = send(client_sock, (char*)&data, sizeof(cs_packet_mainGame), 0);
         if (retval == SOCKET_ERROR) {
             err_display("send()");
             break;
         }
 
         // 받은 데이터 출력
-        //buf[retval] = '\0';
+        buf[retval] = '\0';
         printf("[TCP/%s:%d] %s\n", inet_ntoa(clientaddr.sin_addr),
             ntohs(clientaddr.sin_port), buf);
     }
@@ -99,16 +108,20 @@ int main(int argc, char* argv[])
     if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
         return 1;
 
-    listen_sock = socket(AF_INET, SOCK_STREAM, 0);
+    listen_sock = socket(AF_INET, SOCK_STREAM, 0); //연결용 소켓 
     if (listen_sock == INVALID_SOCKET) err_quit("socket()");
 
+    printf("listening...");
+
     // 데이터 통신에 사용할 변수
-    SOCKET client_sock = init_Client_Socket(listen_sock);
+    SOCKET client_sock = init_Client_Socket(listen_sock); //통신을 위한 소켓
     SOCKADDR_IN clientaddr;
-    int addrlen;
     HANDLE hThread;
 
-    printf("listening...");
+    //클라이언트 정보 얻기
+    int addrlen = sizeof(clientaddr);
+    getpeername(client_sock, (SOCKADDR*)&clientaddr, &addrlen);
+
 
     while (1) {
         // accept()
@@ -171,6 +184,55 @@ void err_display(char* msg)
         (LPTSTR)&lpMsgBuf, 0, NULL);
     printf("[%s] %s", msg, (char*)lpMsgBuf);
     LocalFree(lpMsgBuf);
+}
+
+int recvn(SOCKET s, char* buf, int len, int flags)
+{
+    int received;
+    char* ptr = buf;
+    int left = len;
+
+    while (left > 0) {
+        received = recv(s, ptr, left, flags);
+        if (received == SOCKET_ERROR)
+            return SOCKET_ERROR;
+        else if (received == 0)
+            break;
+        left -= received;
+        ptr += received;
+    }
+
+    return (len - left);
+}
+
+void recvData(SOCKET sock) {
+
+    int retval;
+
+    cs_packet_mainGame CLpacket;
+    int datalen = sizeof(cs_packet_mainGame);
+
+    retval = recvn(sock, (char*)&datalen, datalen, 0); //구조체 크기 받기
+    if (retval == SOCKET_ERROR) err_display("recv()");
+
+    printf("구조체 크기 %d바이트를 받았습니다.\r\n", retval);
+    printf("[받은 데이터] %d\r\n", datalen);
+
+    //받은 데이터
+    int dataSize;
+    char sBuf[BUFSIZE];
+    cs_packet_mainGame* packet;
+
+    dataSize = recvn(sock, sBuf, BUFSIZE, 0);
+    if (retval == SOCKET_ERROR) err_display("recv()");
+
+    sBuf[dataSize] = '\0';
+    packet = (cs_packet_mainGame*)sBuf;
+    printf("[TCP 서버] %d바이트를 받았습니다.\r\n", dataSize);
+    printf("[받은 데이터] %s\r\n", (char*)&packet);
+
+    //return *packet;
+
 }
 
 void Send_Packet(void* _packet, SOCKET _sock)
