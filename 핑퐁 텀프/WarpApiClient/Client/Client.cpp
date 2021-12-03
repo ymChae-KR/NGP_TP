@@ -176,7 +176,6 @@ DWORD WINAPI GameThread(LPVOID arg) {
 		// 받은 데이터 출력
 		buf[retval] = '\0';
 		printf("[TCP 클라이언트] %d바이트를 받았습니다.\r\n", retval);
-		//printf("[받은 데이터] %s\r\n", buf);
 
 	}
 
@@ -358,8 +357,8 @@ void Interaction()
 	cout << "send packet to server : x = " << packet.ptPos.x << ", y = " << packet.ptPos.y << ", PID = " << packet.uiPlayerID << endl;
 
 	// 수신
-	sc_packet_mainGame recvPacket{};
-	retval = recvn(sock, reinterpret_cast<char*>(&recvPacket), sizeof(recvPacket), 0);
+	char* recvnPacket{};
+	retval = recvn(sock, recvnPacket, sizeof(sc_packet_mainGame), 0);
 	if (retval == SOCKET_ERROR) {
 		err_display((char*)"recv()");
 		return;
@@ -367,9 +366,10 @@ void Interaction()
 	else if (retval == 0)
 		return;
 
-
 	// 받은 데이터 출력
+	sc_packet_mainGame& recvPacket = reinterpret_cast<sc_packet_mainGame&>(recvnPacket);
 	cout << "recv packet from server : x = " << recvPacket.vec2Pos.x << ", y = " << recvPacket.vec2Pos.y << ", PID = " << recvPacket.uiPlayerID << endl;
+	
 
 	switch (recvPacket.pkType)
 	{
