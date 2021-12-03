@@ -116,6 +116,8 @@ void init_Server_Socket() {
 	if (retval == SOCKET_ERROR)
 		err_quit((char*)"connect()");
 
+	cout << "SOCK : " << sock << endl;
+	cout << "SOCKADDR : " << serveraddr.sin_port << endl;
 	/* hThread = CreateThread(NULL, 0, GameThread, (LPVOID)sock, 0, NULL);
 	 if (hThread == NULL)
 	 {
@@ -306,24 +308,33 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 void Send_Packet(void* _packet)
 {
 	char* packet = reinterpret_cast<char*>(_packet);
-	int retval;
 
-	// 데이터 보내기
-	//cs_packet_mainGame packet{};
-
-	retval = send(sock, (char*)&packet, sizeof(packet[0]), 0);
-
+	int retval = send(sock, (char*)&packet, sizeof(packet[0]), 0);
 	if (retval == SOCKET_ERROR)
 	{
 		err_display((char*)"send()");
 		return;
 	}
-
 	printf("[TCP 클라이언트] %d바이트를 보냈습니다.\r\n", retval);
 
 	//  플레이어 움직임 테스트용 cout 로그
 	cout << "x : " << reinterpret_cast<cs_packet_mainGame*>(_packet)->ptPos.x << "y : " << reinterpret_cast<cs_packet_mainGame*>(_packet)->ptPos.y << endl;
 
+}
+
+char* Recv_Packet()
+{
+	// 수신
+	sc_packet_mainGame recvPacket{};
+	int retval = recvn(sock, reinterpret_cast<char*>(&recvPacket), sizeof(recvPacket), 0);
+	if (retval == SOCKET_ERROR) {
+		err_display((char*)"recv()");
+		return nullptr;
+	}
+	else if (retval == 0)
+		return nullptr;
+
+	return (char*)&recvPacket;
 }
 
 void Interaction()
@@ -337,7 +348,6 @@ void Interaction()
 	cs_packet_mainGame packet{};
 	packet.ptPos = gGameFramework.GetPlayerPos();
 	packet.uiPlayerID = gGameFramework.GetID();
-
 	retval = send(sock, (char*)&packet, sizeof(cs_packet_mainGame), 0);
 
 	if (retval == SOCKET_ERROR)
@@ -348,8 +358,7 @@ void Interaction()
 	cout << "send packet to server : x = " << packet.ptPos.x << ", y = " << packet.ptPos.y << ", PID = " << packet.uiPlayerID << endl;
 
 	// 수신
-	cs_packet_mainGame recvPacket{};
-
+	sc_packet_mainGame recvPacket{};
 	retval = recvn(sock, reinterpret_cast<char*>(&recvPacket), sizeof(recvPacket), 0);
 	if (retval == SOCKET_ERROR) {
 		err_display((char*)"recv()");
@@ -358,8 +367,9 @@ void Interaction()
 	else if (retval == 0)
 		return;
 
+
 	// 받은 데이터 출력
-	cout << "recv packet from server : x = " << recvPacket.ptPos.x << ", y = " << recvPacket.ptPos.y << ", PID = " << recvPacket.uiPlayerID << endl;
+	cout << "recv packet from server : x = " << recvPacket.vec2Pos.x << ", y = " << recvPacket.vec2Pos.y << ", PID = " << recvPacket.uiPlayerID << endl;
 
 	switch (recvPacket.pkType)
 	{
@@ -369,12 +379,18 @@ void Interaction()
 
 	case PACKET_TYPE::START:
 		gGameFramework.SetClientID(recvPacket.pkType);
+
 		cout << "Packet type is START, my PID is : " << recvPacket.pkType << endl;
 		break;
 	
 	case PACKET_TYPE::MAIN:
 		cout << "Packet type is MAIN" << endl;
-		gGameFramework.SetPlayerData(recvPacket);
+		cs_packet_mainGame temp;
+		temp.pkType = recvPacket.pkType;
+		temp.ptPos = recvPacket.vec2Pos;
+		temp.uiPlayerID = recvPacket.uiPlayerID;
+
+		gGameFramework.SetPlayerData(temp);
 		break;
 	}
 

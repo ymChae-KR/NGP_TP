@@ -3,11 +3,6 @@
 #include "ServerData.h"
 #include "GameData.h"
 
-void err_quit(char* msg);
-void err_display(char* msg);
-void Send_Packet(void* _packet, SOCKET _sock);
-DWORD WINAPI MainGameThread(LPVOID arg);
-DWORD WINAPI EndGameThread(LPVOID arg);
 
 SOCKET listen_sock;
 HANDLE hSendEvent; // 전송 완료 이벤트
@@ -53,8 +48,11 @@ DWORD WINAPI MainGameThread(LPVOID arg) {
     // 클라이언트 정보 얻기
     addrlen = sizeof(clientaddr);
     getpeername(client_sock, (SOCKADDR*)&clientaddr, &addrlen);
+    //  클라이언트에게 PID 송신
+    SendID2Client(client_sock, clientaddr);
 
-    while (1) {
+    while (1) 
+    {
         // 데이터 받기
         retval = recv(client_sock, buf, BUFSIZE, 0);
         if (retval == SOCKET_ERROR) {
@@ -63,7 +61,6 @@ DWORD WINAPI MainGameThread(LPVOID arg) {
         }
         else if (retval == 0)
             break;
-
 
         // 데이터 보내기
         cs_packet_mainGame* data = reinterpret_cast<cs_packet_mainGame*>(buf);
@@ -175,17 +172,12 @@ void err_display(char* msg)
 
 void Send_Packet(void* _packet, SOCKET _sock)
 {
-
-    ////수신 완료 대기 이벤트
-    //DWORD hEvent;
-    //hEvent = WaitForSingleObject(hRecvEvent, INFINITE);
-    //if (hEvent != WAIT_OBJECT_0) return;
-
     char* packet = reinterpret_cast<char*>(_packet);
     int retval;
 
     // 데이터 보내기
-    retval = send(_sock, (char*)&packet, sizeof(packet[0]), 0);
+    sc_packet_mainGame* temp = reinterpret_cast<sc_packet_mainGame*>(_packet);
+    retval = send(_sock, (char*)&packet, sizeof(sc_packet_mainGame), 0);
 
     if (retval == SOCKET_ERROR)
     {
@@ -195,4 +187,23 @@ void Send_Packet(void* _packet, SOCKET _sock)
 
     printf("[TCP 서버] %d바이트를 보냈습니다.\r\n", retval);
 
+}
+
+void SendID2Client(SOCKET _sock, SOCKADDR_IN _clientaddr)
+{
+    // 데이터 보내기
+    g_clientIDManager[g_uiIDCnt].sc_Client_Address = _clientaddr;
+    g_clientIDManager[g_uiIDCnt].uiID = g_uiIDCnt;
+
+    sc_packet_mainGame packet{};
+    packet.pkType = PACKET_TYPE::START;
+    packet.uiPlayerID = g_clientIDManager[g_uiIDCnt++].uiID;
+
+    Send_Packet(&packet, _sock);
+    cout << g_uiIDCnt << "번째 클라이언트 접속 후 클라 ID 송신" << endl;
+}
+
+void judgePacketData()
+{
+    
 }

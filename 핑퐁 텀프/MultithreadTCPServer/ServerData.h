@@ -13,3 +13,15 @@
 #define BUFSIZE    512
 
 using namespace std;
+
+//	소켓 오류 출력 함수
+void err_quit(char* msg);
+void err_display(char* msg);
+
+//	커스텀 패킷 송수신 함수
+void SendID2Client(SOCKET _sock, SOCKADDR_IN _clientaddr);
+void Send_Packet(void* _packet, SOCKET _sock);
+
+//	멀티쓰레드 관리 함수
+DWORD WINAPI MainGameThread(LPVOID arg);
+DWORD WINAPI EndGameThread(LPVOID arg);

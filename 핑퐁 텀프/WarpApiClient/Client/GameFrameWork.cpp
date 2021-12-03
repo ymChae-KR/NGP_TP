@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "GameFramework.h"
+#include "Client.h"
 
 
 void WGameFramework::SetPlayerData(cs_packet_mainGame _packet)
@@ -11,6 +12,22 @@ void WGameFramework::SetPlayerData(cs_packet_mainGame _packet)
 void WGameFramework::SetClientID(UINT _ID)
 {
 	m_uiID = _ID;
+
+	// 플레이어 ID값 별로 분기 해서 컨트롤할 플레이어 지정해야함
+	if (m_uiID == 0)
+	{
+		m_pPlayer->SetPlayerPoint(VECTOR2(10, 10));
+		m_pEnemy->SetPlayerPoint(VECTOR2(1200, 10));
+	}
+	else if (m_uiID == 1)
+	{
+		m_pPlayer->SetPlayerPoint(VECTOR2(1200, 10));
+		m_pEnemy->SetPlayerPoint(VECTOR2(10, 10));
+	}
+	else
+	{
+		cout << "플레이어 ID 값 오류" << endl;
+	}
 }
 
 void WGameFramework::SetPlayerPos(cs_packet_mainGame _packet)
@@ -44,22 +61,9 @@ void WGameFramework::Create(HWND hWnd)
 {
 	m_hWnd = hWnd;
 	 
-	
-	// 플레이어 ID값 별로 분기 해서 컨트롤할 플레이어 지정해야함
-	if (m_uiID == 0)
-	{
-		m_pPlayer->SetPlayerPoint(VECTOR2(10, 10));
-		m_pEnemy->SetPlayerPoint(VECTOR2(1200, 10));
-	}
-	else if (m_uiID == 1)
-	{
-		m_pPlayer->SetPlayerPoint(VECTOR2(1200, 10));
-		m_pEnemy->SetPlayerPoint(VECTOR2(10, 10));
-	}
-	else
-	{
-		cout << "플레이어 ID 값 오류" << endl;
-	}
+	//	서버에서 클라 아이디 수신 후 PID 초기화
+	//cs_packet_mainGame* data = reinterpret_cast<cs_packet_mainGame*>(Recv_Packet());
+	//m_uiID = data->uiPlayerID;
 }
 
 void WGameFramework::OnDraw(HDC hdc)
@@ -74,7 +78,7 @@ void WGameFramework::OnDraw(HDC hdc)
 
 void WGameFramework::OnUpdate(const float frameTime)
 {
-	
+	Interaction();
 }
 
 void WGameFramework::KeyBoard(UINT iMessage, WPARAM wParam, LPARAM lParam)
