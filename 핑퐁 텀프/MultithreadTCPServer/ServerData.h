@@ -21,7 +21,7 @@ void err_display(char* msg);
 
 //	커스텀 패킷 송수신 함수
 void SendID2Client(SOCKET _sock, SOCKADDR_IN _clientaddr);
-void Send_Packet_Assembly(char* _p, PACKET_TYPE _pType);
+void Recv_Packet_Assembly(char* _p, PACKET_TYPE _pType);
 void Send_Packet(void* _packet, SOCKET _sock);
 UINT judgePacketData(ID _id);
 

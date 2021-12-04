@@ -25,7 +25,7 @@ HANDLE hEvent; // 이벤트
 global_variable WGameFramework gGameFramework;
 global_variable Render_State render_state;
 
-bool g_bGameStart{ false };
+PACKET_TYPE g_GameStatus{ PACKET_TYPE::NONE };
 unsigned int CliendID = 0; // 서버에서 결정해주는 클라이언트 번호
 char buf[BUFSIZE + 1]; // 데이터 송수신 버퍼
 
@@ -287,8 +287,9 @@ void Interaction()
 
 	// 송신
 	cs_packet_mainGame packet{};
-	packet.ptPos = gGameFramework.GetPlayerPos();
+	packet.pkType = g_GameStatus;
 	packet.uiPlayerID = gGameFramework.GetID();
+	packet.ptPos = gGameFramework.GetPlayerPos();
 	retval = send(sock, (char*)&packet, sizeof(cs_packet_mainGame), 0);
 
 	if (retval == SOCKET_ERROR)

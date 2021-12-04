@@ -48,7 +48,8 @@ SOCKET init_Client_Socket(SOCKET listen_sock) { //연결용 소켓 생성
     return listen_sock;
 }
 
-DWORD WINAPI MainGameThread(LPVOID arg) {
+DWORD WINAPI MainGameThread(LPVOID arg) 
+{
 
     SOCKET client_sock = (SOCKET)arg;
     SOCKADDR_IN clientaddr;
@@ -57,17 +58,17 @@ DWORD WINAPI MainGameThread(LPVOID arg) {
     int addrlen;
     char buf[BUFSIZE + 1]{};
     char recvBuf[sizeof(cs_packet_mainGame)]{};
-    gameData gd;        //  클라 1번에 송신할 클라2번의 데이터 판단용 변수
-    bool bIsIDSended{ true };
-    
 
     // 클라이언트 정보 얻기
     addrlen = sizeof(clientaddr);
     getpeername(client_sock, (SOCKADDR*)&clientaddr, &addrlen);
 
+    gameData gd;                    //  클라 1번에 송신할 클라2번의 데이터 판단용 변수    
     ID PID{ clientaddr, g_uiIDCnt };
     gd.m_ID = judgePacketData(PID);
 
+    g_clientIDManager[g_uiIDCnt].sc_Client_Address = clientaddr;
+    g_clientIDManager[g_uiIDCnt].uiID = g_uiIDCnt++;
    
     while (true) 
     {
@@ -86,12 +87,6 @@ DWORD WINAPI MainGameThread(LPVOID arg) {
 
 
         //  송신
-        sc_packet_mainGame data{};
-        //  패킷 조립
-        data.pkType = MAIN;
-        data.vec2Pos = g_NetMgr.getOtherPlayerData(gd.m_ID).m_vecPos;        
-        data.uiPlayerID = gd.m_ID;
-
         if (!g_bGameStart)
         {
             //  클라이언트에게 PID 송신
@@ -101,6 +96,12 @@ DWORD WINAPI MainGameThread(LPVOID arg) {
         }
         else
         {
+            //  패킷 조립
+            sc_packet_mainGame data{};
+            data.pkType = MAIN;
+            data.vec2Pos = g_NetMgr.getOtherPlayerData(gd.m_ID).m_vecPos;
+            data.uiPlayerID = gd.m_ID;
+
             retval = send(client_sock, (char*)&data, sizeof(sc_packet_mainGame), 0);
             if (retval == SOCKET_ERROR) {
                 err_display((char*)"send()");
@@ -159,17 +160,7 @@ int main(int argc, char* argv[])
             ThreadNum, inet_ntoa(clientaddr.sin_addr), ntohs(clientaddr.sin_port));
 
         ThreadNum++; //ClientNum
-        g_clientIDManager[g_uiIDCnt].sc_Client_Address = clientaddr;
-        g_clientIDManager[g_uiIDCnt].uiID = g_uiIDCnt++;
 
-
-        /*g_clientIDManager[g_uiIDCnt].sc_Client_Address = clientaddr;
-        g_clientIDManager[g_uiIDCnt].uiID = g_uiIDCnt++;
-        sc_packet_mainGame packet{};
-        packet.uiPlayerID = g_clientIDManager[g_uiIDCnt - 1].uiID;
-
-        Send_Packet(&packet, client_sock);
-        cout << g_uiIDCnt << "번째 클라이언트 접속 후 클라 ID 송신" << endl;*/
 
         // 스레드 생성
         hThread = CreateThread(NULL, 0, MainGameThread, (LPVOID)client_sock, 0, NULL);
@@ -258,22 +249,20 @@ UINT judgePacketData(ID _id)
     return 2;
 }
 
-void Send_Packet_Assembly(char* _p, PACKET_TYPE _pType)
+void Recv_Packet_Assembly(char* _p)
 {
-    sc_packet_mainGame* packet = reinterpret_cast<sc_packet_mainGame*>(_p);
+    cs_packet_mainGame* packet = reinterpret_cast<cs_packet_mainGame*>(_p);
     
-    switch (_pType)
+    switch (packet->pkType)
     {
     case PACKET_TYPE::NONE:
         
         break;
     case PACKET_TYPE::START:
 
-        packet->pkType = PACKET_TYPE::START;
-        packet->uiPlayerID = g_clientIDManager[g_uiIDCnt++].uiID;
-
         break;
     case PACKET_TYPE::MAIN:
+        g_NetMgr.setPacketData(*packet);
         break;
     }
 
