@@ -66,8 +66,6 @@ DWORD WINAPI MainGameThread(LPVOID arg) {
     getpeername(client_sock, (SOCKADDR*)&clientaddr, &addrlen);
 
     ID PID{ clientaddr, g_uiIDCnt };
-    //  클라이언트에게 PID 송신
-    //SendID2Client(client_sock, clientaddr);
     gd.m_ID = judgePacketData(PID);
 
    
@@ -83,7 +81,7 @@ DWORD WINAPI MainGameThread(LPVOID arg) {
         else if (retval == 0)
             break;
 
-        cout << "수신 패킷 PID : " << recvPacket.uiPlayerID << ", Packet Type : " << recvPacket.pkType << ", || x = " << recvPacket.ptPos.x << ", y = " << recvPacket.ptPos.y << endl;
+        //cout << "수신 패킷 PID : " << recvPacket.uiPlayerID << ", Packet Type : " << recvPacket.pkType << ", || x = " << recvPacket.ptPos.x << ", y = " << recvPacket.ptPos.y << endl;
         g_NetMgr.setPacketData(recvPacket);
 
 
@@ -91,14 +89,15 @@ DWORD WINAPI MainGameThread(LPVOID arg) {
         sc_packet_mainGame data{};
         //  패킷 조립
         data.pkType = MAIN;
-        data.vec2Pos.x = g_NetMgr.getOtherPlayerData(gd.m_ID).m_vecPos.x;
-        data.vec2Pos.y = g_NetMgr.getOtherPlayerData(gd.m_ID).m_vecPos.y;
+        data.vec2Pos = g_NetMgr.getOtherPlayerData(gd.m_ID).m_vecPos;        
         data.uiPlayerID = gd.m_ID;
 
-        if (bIsIDSended)
+        if (!g_bGameStart)
         {
+            //  클라이언트에게 PID 송신
             SendID2Client(client_sock, clientaddr);
-            bIsIDSended = false;
+            if (g_uiIDCnt > 1)  //  서버에 접속한 클라가 1명보다 많으면 게임을 시작하라
+                g_bGameStart = true;
         }
         else
         {
@@ -160,6 +159,9 @@ int main(int argc, char* argv[])
             ThreadNum, inet_ntoa(clientaddr.sin_addr), ntohs(clientaddr.sin_port));
 
         ThreadNum++; //ClientNum
+        g_clientIDManager[g_uiIDCnt].sc_Client_Address = clientaddr;
+        g_clientIDManager[g_uiIDCnt].uiID = g_uiIDCnt++;
+
 
         /*g_clientIDManager[g_uiIDCnt].sc_Client_Address = clientaddr;
         g_clientIDManager[g_uiIDCnt].uiID = g_uiIDCnt++;
@@ -216,11 +218,10 @@ void recvData(SOCKET sock) {
 void Send_Packet(void* _packet, SOCKET _sock)
 {
     //char* packet = reinterpret_cast<char*>(_packet);
-    int retval;
 
     // 데이터 보내기
     sc_packet_mainGame* temp = reinterpret_cast<sc_packet_mainGame*>(_packet);
-    retval = send(_sock, (char*)&temp, sizeof(sc_packet_mainGame), 0);
+    int retval = send(_sock, (char*)temp, sizeof(sc_packet_mainGame), 0);
 
     if (retval == SOCKET_ERROR)
     {
@@ -228,22 +229,18 @@ void Send_Packet(void* _packet, SOCKET _sock)
         return;
     }
 
-    printf("[TCP 서버] %d바이트를 보냈습니다.\r\n", retval);
+    printf("Send_Packet()함수로 패킷을 보냈습니다.\r\n", retval);
 
 }
 
 void SendID2Client(SOCKET _sock, SOCKADDR_IN _clientaddr)
 {
-    // 데이터 보내기
-    g_clientIDManager[g_uiIDCnt].sc_Client_Address = _clientaddr;
-    g_clientIDManager[g_uiIDCnt].uiID = g_uiIDCnt;
-
     sc_packet_mainGame packet{};
     packet.pkType = PACKET_TYPE::START;
-    packet.uiPlayerID = g_clientIDManager[g_uiIDCnt++].uiID;
+    packet.uiPlayerID = g_clientIDManager[g_uiIDCnt].uiID;
 
     Send_Packet(&packet, _sock);
-    cout << g_uiIDCnt << "번째 클라이언트 접속 후 클라 ID 송신" << endl;
+    cout << g_uiIDCnt << "번째 클라이언트 접속 후 클라 ID : " << packet.uiPlayerID << "송신" << endl;
 }
 
 UINT judgePacketData(ID _id)
@@ -261,7 +258,23 @@ UINT judgePacketData(ID _id)
     return 2;
 }
 
-//sc_packet_mainGame Build_Send_Packet(UINT _id)
-//{
-//    
-//}
+void Send_Packet_Assembly(char* _p, PACKET_TYPE _pType)
+{
+    sc_packet_mainGame* packet = reinterpret_cast<sc_packet_mainGame*>(_p);
+    
+    switch (_pType)
+    {
+    case PACKET_TYPE::NONE:
+        
+        break;
+    case PACKET_TYPE::START:
+
+        packet->pkType = PACKET_TYPE::START;
+        packet->uiPlayerID = g_clientIDManager[g_uiIDCnt++].uiID;
+
+        break;
+    case PACKET_TYPE::MAIN:
+        break;
+    }
+
+}

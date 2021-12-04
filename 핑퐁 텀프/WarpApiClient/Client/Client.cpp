@@ -296,12 +296,10 @@ void Interaction()
 		err_display((char*)"send()");
 		return;
 	}
-	cout << "send packet to server : x = " << packet.ptPos.x << ", y = " << packet.ptPos.y << ", PID = " << packet.uiPlayerID << endl;
+	//cout << "send packet to server : x = " << packet.ptPos.x << ", y = " << packet.ptPos.y << ", PID = " << packet.uiPlayerID << endl;
 
 	// 수신
 	sc_packet_mainGame recvPacket{};
-	//len = sizeof(sc_packet_mainGame);
-	//len = recv(sock, buf, BUFSIZE, 0);
 	len = recvn(sock, reinterpret_cast<char*>(&recvPacket), sizeof(sc_packet_mainGame), 0);
 	if (len == SOCKET_ERROR) {
 		err_display((char*)"recv()");
@@ -311,9 +309,8 @@ void Interaction()
 
 	// 받은 데이터 출력
 	//sc_packet_mainGame recvPacket = reinterpret_cast<sc_packet_mainGame&>(recvPacket);
-	cout << "recv packet from server : x = " << recvPacket.vec2Pos.x << ", y = " << recvPacket.vec2Pos.y << ", PID = " << recvPacket.uiPlayerID << endl;
+	//cout << "recv packet from server : x = " << recvPacket.vec2Pos.x << ", y = " << recvPacket.vec2Pos.y << ", PID = " << recvPacket.uiPlayerID << endl;
 	
-
 	switch (recvPacket.pkType)
 	{
 	case PACKET_TYPE::NONE:
@@ -327,11 +324,11 @@ void Interaction()
 		break;
 
 	case PACKET_TYPE::MAIN:
-		cout << "Packet type is MAIN" << endl;
+		//cout << "Packet type is MAIN" << endl;
 		cs_packet_mainGame temp;
 		temp.pkType = recvPacket.pkType;
 		temp.ptPos = recvPacket.vec2Pos;
-		temp.uiPlayerID = recvPacket.uiPlayerID;
+		//temp.uiPlayerID = recvPacket.uiPlayerID;
 
 		gGameFramework.SetPlayerData(temp);
 		break;

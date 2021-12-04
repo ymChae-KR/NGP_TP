@@ -5,8 +5,11 @@
 
 void WGameFramework::SetPlayerData(cs_packet_mainGame _packet)
 {
-	m_uiID = _packet.uiPlayerID;
-	m_pPlayer->SetPlayerPoint(_packet.ptPos);
+	if (_packet.uiPlayerID == m_uiID)
+	{
+		m_uiID = _packet.uiPlayerID;
+		m_pPlayer->SetPlayerPoint(_packet.ptPos);
+	}
 }
 
 void WGameFramework::SetClientID(UINT _ID)
