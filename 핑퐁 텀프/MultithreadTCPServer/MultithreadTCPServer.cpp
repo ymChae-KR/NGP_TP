@@ -2,12 +2,13 @@
 
 #include "ServerData.h"
 #include "GameData.h"
-#include "server.cpp"
+#include "CNetMgr.h"
 
 void err_quit(char* msg);
 void err_display(char* msg);
 int recvn(SOCKET s, char* buf, int len, int flags);
 void Send_Packet(void* _packet, SOCKET _sock);
+UINT judgePacketData(ID _id);
 DWORD WINAPI MainGameThread(LPVOID arg);
 DWORD WINAPI EndGameThread(LPVOID arg);
 
@@ -23,6 +24,8 @@ unsigned int ThreadNum = 1;
 ID g_clientIDManager[2]{};      //  클라이언트 ID 부여 후 이를 관리할 컨테이너, 차후에 서버 프로젝트의 mainGame 안에서 관리 할 예정
 UINT g_uiIDCnt{ 0 };            //  각 클라이언트 ID 부여를 위한 Count
 BOOL g_bGameStart{ false };     //  게임 시작 여부 확인 변수
+
+CNetMgr g_NetMgr;
 
 SOCKET init_Client_Socket(SOCKET listen_sock) { //연결용 소켓 생성
 
@@ -52,20 +55,23 @@ DWORD WINAPI MainGameThread(LPVOID arg) {
     int retval;
     int addrlen;
     char buf[BUFSIZE + 1]{};
+    char recvBuf[sizeof(cs_packet_mainGame)]{};
+    gameData gd;        //  클라 1번에 송신할 클라2번의 데이터 판단용 변수
 
     // 클라이언트 정보 얻기
     addrlen = sizeof(clientaddr);
     getpeername(client_sock, (SOCKADDR*)&clientaddr, &addrlen);
+
+    ID PID{ clientaddr, g_uiIDCnt };
     //  클라이언트에게 PID 송신
-    //SendID2Client(client_sock, clientaddr); //이 다음으로 안넘어가는듯?
+    SendID2Client(client_sock, clientaddr);
+    gd.m_ID = judgePacketData(PID);
 
-
-
-    while (1)
+   
+    while (true) 
     {
-        sc_packet_mainGame recvPacket{};
-        // 데이터 받기
-        retval = recvn(client_sock, reinterpret_cast<char*>(&recvPacket), sizeof(recvPacket), 0);
+        // 수신
+        retval = recvn(client_sock, recvBuf, BUFSIZE, 0);
         if (retval == SOCKET_ERROR) {
             err_display((char*)"recv()");
             break;
@@ -234,7 +240,22 @@ void SendID2Client(SOCKET _sock, SOCKADDR_IN _clientaddr)
     cout << g_uiIDCnt << "번째 클라이언트 접속 후 클라 ID 송신" << endl;
 }
 
-void judgePacketData()
+UINT judgePacketData(ID _id)
 {
+    if (_id.uiID == 0)
+        return 1;
+    else if (_id.uiID == 1)
+        return 0;
+    else
+    {
+        cout << "Client PID 판단 오류" << endl;
+        return 2;
+    }
 
+    return 2;
 }
+
+//sc_packet_mainGame Build_Send_Packet(UINT _id)
+//{
+//    
+//}
