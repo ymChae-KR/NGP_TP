@@ -79,6 +79,8 @@ struct VECTOR2
 	float y;
 };
 
+#pragma pack (push, 1)
+
 struct cs_packet_mainGame
 {
 	PACKET_TYPE pkType;
@@ -92,3 +94,5 @@ struct sc_packet_mainGame
 	VECTOR2		vec2Pos;
 	UINT		uiPlayerID;
 };
+
+#pragma pack (pop)

@@ -2,6 +2,7 @@
 
 #include "ServerData.h"
 #include "GameData.h"
+#include "server.cpp"
 
 void err_quit(char* msg);
 void err_display(char* msg);
@@ -34,11 +35,11 @@ SOCKET init_Client_Socket(SOCKET listen_sock) { //연결용 소켓 생성
     serveraddr.sin_addr.s_addr = htonl(INADDR_ANY);
     serveraddr.sin_port = htons(SERVERPORT);
     retval = bind(listen_sock, (SOCKADDR*)&serveraddr, sizeof(serveraddr));
-    if (retval == SOCKET_ERROR) err_quit("bind()");
+    if (retval == SOCKET_ERROR) err_quit((char*)"bind()");
 
     // listen()
     retval = listen(listen_sock, SOMAXCONN);
-    if (retval == SOCKET_ERROR) err_quit("listen()");
+    if (retval == SOCKET_ERROR) err_quit((char*)"listen()");
 
     return listen_sock;
 }
@@ -56,32 +57,46 @@ DWORD WINAPI MainGameThread(LPVOID arg) {
     addrlen = sizeof(clientaddr);
     getpeername(client_sock, (SOCKADDR*)&clientaddr, &addrlen);
     //  클라이언트에게 PID 송신
-    SendID2Client(client_sock, clientaddr);
+    //SendID2Client(client_sock, clientaddr); //이 다음으로 안넘어가는듯?
 
-    while (1) 
+
+
+    while (1)
     {
-
+        sc_packet_mainGame recvPacket{};
         // 데이터 받기
-        retval = recvn(client_sock, buf, BUFSIZE, 0);
+        retval = recvn(client_sock, reinterpret_cast<char*>(&recvPacket), sizeof(recvPacket), 0);
         if (retval == SOCKET_ERROR) {
-            err_display("recv()");
+            err_display((char*)"recv()");
             break;
         }
         else if (retval == 0)
             break;
 
+        // 받은 데이터 출력
+        cout << "recv packet from server : x = " << recvPacket.vec2Pos.x << ", y = " << recvPacket.vec2Pos.y << ", PID = " << recvPacket.uiPlayerID << endl;
+
+
+        //// 받은 데이터 출력
+        //buf[retval] = '\0';
+        //printf("[TCP/%s:%d] %s\n", inet_ntoa(clientaddr.sin_addr),
+        //    ntohs(clientaddr.sin_port), buf);
+
         // 데이터 보내기
         cs_packet_mainGame* data = reinterpret_cast<cs_packet_mainGame*>(buf);
-        retval = send(client_sock, (char*)&data, sizeof(cs_packet_mainGame), 0);
+        //테스트 데이터
+        data->pkType = MAIN;
+        data->ptPos.x = 500;
+        data->ptPos.y = 500;
+        data->uiPlayerID = 1;
+
+        retval = send(client_sock, (char*)data, sizeof(cs_packet_mainGame), 0);
         if (retval == SOCKET_ERROR) {
-            err_display("send()");
+            err_display((char*)"send()");
             break;
         }
 
-        // 받은 데이터 출력
-        buf[retval] = '\0';
-        printf("[TCP/%s:%d] %s\n", inet_ntoa(clientaddr.sin_addr),
-            ntohs(clientaddr.sin_port), buf);
+
     }
 
     // closesocket()
@@ -105,7 +120,7 @@ int main(int argc, char* argv[])
         return 1;
 
     listen_sock = socket(AF_INET, SOCK_STREAM, 0); //연결용 소켓 
-    if (listen_sock == INVALID_SOCKET) err_quit("socket()");
+    if (listen_sock == INVALID_SOCKET) err_quit((char*)"socket()");
 
     printf("listening...");
 
@@ -118,13 +133,13 @@ int main(int argc, char* argv[])
     int addrlen = sizeof(clientaddr);
     getpeername(client_sock, (SOCKADDR*)&clientaddr, &addrlen);
 
-    while (1) 
+    while (1)
     {
         // accept()
         addrlen = sizeof(clientaddr);
         client_sock = accept(listen_sock, (SOCKADDR*)&clientaddr, &addrlen);
         if (client_sock == INVALID_SOCKET) {
-            err_display("accept()");
+            err_display((char*)"accept()");
             break;
         }
 
@@ -156,50 +171,6 @@ int main(int argc, char* argv[])
     return 0;
 }
 
-void err_quit(char* msg)
-{
-    LPVOID lpMsgBuf;
-    FormatMessage(
-        FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
-        NULL, WSAGetLastError(),
-        MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-        (LPTSTR)&lpMsgBuf, 0, NULL);
-    MessageBox(NULL, (LPCTSTR)lpMsgBuf, msg, MB_ICONERROR);
-    LocalFree(lpMsgBuf);
-    exit(1);
-}
-
-void err_display(char* msg)
-{
-    LPVOID lpMsgBuf;
-    FormatMessage(
-        FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
-        NULL, WSAGetLastError(),
-        MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-        (LPTSTR)&lpMsgBuf, 0, NULL);
-    printf("[%s] %s", msg, (char*)lpMsgBuf);
-    LocalFree(lpMsgBuf);
-}
-
-int recvn(SOCKET s, char* buf, int len, int flags)
-{
-    int received;
-    char* ptr = buf;
-    int left = len;
-
-    while (left > 0) {
-        received = recv(s, ptr, left, flags);
-        if (received == SOCKET_ERROR)
-            return SOCKET_ERROR;
-        else if (received == 0)
-            break;
-        left -= received;
-        ptr += received;
-    }
-
-    return (len - left);
-}
-
 void recvData(SOCKET sock) {
 
     int retval;
@@ -208,7 +179,7 @@ void recvData(SOCKET sock) {
     int datalen = sizeof(cs_packet_mainGame);
 
     retval = recvn(sock, (char*)&datalen, datalen, 0); //구조체 크기 받기
-    if (retval == SOCKET_ERROR) err_display("recv()");
+    if (retval == SOCKET_ERROR) err_display((char*)"recv()");
 
     printf("구조체 크기 %d바이트를 받았습니다.\r\n", retval);
     printf("[받은 데이터] %d\r\n", datalen);
@@ -219,7 +190,7 @@ void recvData(SOCKET sock) {
     cs_packet_mainGame* packet;
 
     dataSize = recvn(sock, sBuf, BUFSIZE, 0);
-    if (retval == SOCKET_ERROR) err_display("recv()");
+    if (retval == SOCKET_ERROR) err_display((char*)"recv()");
 
     sBuf[dataSize] = '\0';
     packet = (cs_packet_mainGame*)sBuf;
@@ -232,12 +203,12 @@ void recvData(SOCKET sock) {
 
 void Send_Packet(void* _packet, SOCKET _sock)
 {
-    char* packet = reinterpret_cast<char*>(_packet);
+    //char* packet = reinterpret_cast<char*>(_packet);
     int retval;
 
     // 데이터 보내기
     sc_packet_mainGame* temp = reinterpret_cast<sc_packet_mainGame*>(_packet);
-    retval = send(_sock, (char*)&packet, sizeof(sc_packet_mainGame), 0);
+    retval = send(_sock, (char*)&temp, sizeof(sc_packet_mainGame), 0);
 
     if (retval == SOCKET_ERROR)
     {
@@ -265,5 +236,5 @@ void SendID2Client(SOCKET _sock, SOCKADDR_IN _clientaddr)
 
 void judgePacketData()
 {
-    
+
 }

@@ -18,5 +18,5 @@ void err_quit(char* msg);
 void err_display(char* msg);
 int recvn(SOCKET s, char* buf, int len, int flags);
 void Send_Packet(void* _packet);
-char* Recv_Packet();
+void Recv_Packet();
 void Interaction();

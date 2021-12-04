@@ -1,4 +1,6 @@
-﻿#include "stdafx.h"
+﻿
+
+#include "stdafx.h"
 #include "Client.h"
 #include "GameFramework.h"
 
@@ -118,69 +120,9 @@ void init_Server_Socket() {
 
 	cout << "SOCK : " << sock << endl;
 	cout << "SOCKADDR : " << serveraddr.sin_port << endl;
-	/* hThread = CreateThread(NULL, 0, GameThread, (LPVOID)sock, 0, NULL);
-	 if (hThread == NULL)
-	 {
-		 closesocket(sock);
-	 }
-	 else
-	 {
-		 CloseHandle(hThread);
-	 }*/
-}
-
-DWORD WINAPI GameThread(LPVOID arg) {
-
-	SOCKET client_sock = (SOCKET)arg;
-	SOCKADDR_IN clientaddr;
-
-	//클라이언트 정보 얻기
-	int addrlen = sizeof(clientaddr);
-	getpeername(client_sock, (SOCKADDR*)&clientaddr, &addrlen);
-
-	// 데이터 통신에 사용할 변수
-
-	int retval;
-	int len;
-
-	// 서버와 데이터 통신
-	while (1)
-	{
-		// 데이터 보내기
-		cs_packet_mainGame packet{};
-		packet.ptPos = gGameFramework.GetPlayerPos();
-		packet.uiPlayerID = gGameFramework.GetID();
-
-		//고정 길이 
-		retval = send(client_sock, (char*)&packet, sizeof(cs_packet_mainGame), 0);
-		//retval = send(sock, buf, strlen(buf), 0);
-
-		if (retval == SOCKET_ERROR) {
-			err_display((char*)"send()");
-			break;
-		}
-		printf("[TCP 클라이언트] %d바이트를 보냈습니다.\r\n", retval);
-
-		// 데이터 받기
-		retval = recvn(client_sock, buf, sizeof(packet), 0);
-		if (retval == SOCKET_ERROR) {
-			err_display((char*)"recv()");
-			break;
-		}
-		else if (retval == 0)
-			break;
-
-		cs_packet_mainGame* data = reinterpret_cast<cs_packet_mainGame*>(buf);
-		gGameFramework.SetPlayerData(*data);
-
-		// 받은 데이터 출력
-		buf[retval] = '\0';
-		printf("[TCP 클라이언트] %d바이트를 받았습니다.\r\n", retval);
-		//printf("[받은 데이터] %s\r\n", buf);
-
-	}
 
 }
+
 
 //
 //  함수: MyRegisterClass()
@@ -309,7 +251,7 @@ void Send_Packet(void* _packet)
 {
 	char* packet = reinterpret_cast<char*>(_packet);
 
-	int retval = send(sock, (char*)&packet, sizeof(packet[0]), 0);
+	int retval = send(sock, (char*)&packet, sizeof(packet), 0);
 	if (retval == SOCKET_ERROR)
 	{
 		err_display((char*)"send()");
@@ -322,19 +264,18 @@ void Send_Packet(void* _packet)
 
 }
 
-char* Recv_Packet()
+void Recv_Packet()
 {
+	int retval;
+
 	// 수신
 	sc_packet_mainGame recvPacket{};
-	int retval = recvn(sock, reinterpret_cast<char*>(&recvPacket), sizeof(recvPacket), 0);
+	retval = recvn(sock, reinterpret_cast<char*>(&recvPacket), sizeof(recvPacket), 0);
 	if (retval == SOCKET_ERROR) {
 		err_display((char*)"recv()");
-		return nullptr;
 	}
 	else if (retval == 0)
-		return nullptr;
-
-	return (char*)&recvPacket;
+		return;
 }
 
 void Interaction()
@@ -343,7 +284,7 @@ void Interaction()
 	int len;
 
 	// 서버와 데이터 통신
-	 
+
 	// 송신
 	cs_packet_mainGame packet{};
 	packet.ptPos = gGameFramework.GetPlayerPos();
@@ -359,14 +300,14 @@ void Interaction()
 
 	// 수신
 	sc_packet_mainGame recvPacket{};
-	retval = recvn(sock, reinterpret_cast<char*>(&recvPacket), sizeof(recvPacket), 0);
-	if (retval == SOCKET_ERROR) {
+	//len = sizeof(sc_packet_mainGame);
+	//len = recv(sock, buf, BUFSIZE, 0);
+	len = recvn(sock, reinterpret_cast<char*>(&recvPacket), sizeof(sc_packet_mainGame), 0);
+	if (len == SOCKET_ERROR) {
 		err_display((char*)"recv()");
-		return;
 	}
-	else if (retval == 0)
+	else if (len == 0)
 		return;
-
 
 	// 받은 데이터 출력
 	cout << "recv packet from server : x = " << recvPacket.vec2Pos.x << ", y = " << recvPacket.vec2Pos.y << ", PID = " << recvPacket.uiPlayerID << endl;
@@ -382,7 +323,7 @@ void Interaction()
 
 		cout << "Packet type is START, my PID is : " << recvPacket.pkType << endl;
 		break;
-	
+
 	case PACKET_TYPE::MAIN:
 		cout << "Packet type is MAIN" << endl;
 		cs_packet_mainGame temp;
