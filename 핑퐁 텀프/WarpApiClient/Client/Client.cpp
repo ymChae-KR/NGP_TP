@@ -310,7 +310,7 @@ void Interaction()
 		return;
 
 	// 받은 데이터 출력
-	sc_packet_mainGame& recvPacket = reinterpret_cast<sc_packet_mainGame&>(recvPacket);
+	//sc_packet_mainGame recvPacket = reinterpret_cast<sc_packet_mainGame&>(recvPacket);
 	cout << "recv packet from server : x = " << recvPacket.vec2Pos.x << ", y = " << recvPacket.vec2Pos.y << ", PID = " << recvPacket.uiPlayerID << endl;
 	
 

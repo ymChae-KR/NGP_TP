@@ -3,6 +3,7 @@
 #include "ServerData.h"
 #include "GameData.h"
 #include "CNetMgr.h"
+#include "server.cpp"
 
 void err_quit(char* msg);
 void err_display(char* msg);
@@ -64,14 +65,15 @@ DWORD WINAPI MainGameThread(LPVOID arg) {
 
     ID PID{ clientaddr, g_uiIDCnt };
     //  클라이언트에게 PID 송신
-    SendID2Client(client_sock, clientaddr);
+    //SendID2Client(client_sock, clientaddr);
     gd.m_ID = judgePacketData(PID);
 
    
     while (true) 
     {
+        sc_packet_mainGame recvPacket{};
         // 수신
-        retval = recvn(client_sock, recvBuf, BUFSIZE, 0);
+        retval = recvn(client_sock, reinterpret_cast<char*>(&recvPacket), sizeof(recvPacket), 0);
         if (retval == SOCKET_ERROR) {
             err_display((char*)"recv()");
             break;
