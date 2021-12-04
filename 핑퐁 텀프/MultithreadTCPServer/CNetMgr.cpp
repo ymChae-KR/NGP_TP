@@ -2,7 +2,7 @@
 
 CNetMgr::CNetMgr()
 {
-
+	m_vecData.resize(2);
 }
 
 CNetMgr::~CNetMgr()

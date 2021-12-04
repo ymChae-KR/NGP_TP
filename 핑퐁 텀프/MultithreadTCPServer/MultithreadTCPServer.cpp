@@ -58,6 +58,8 @@ DWORD WINAPI MainGameThread(LPVOID arg) {
     char buf[BUFSIZE + 1]{};
     char recvBuf[sizeof(cs_packet_mainGame)]{};
     gameData gd;        //  클라 1번에 송신할 클라2번의 데이터 판단용 변수
+    bool bIsIDSended{ true };
+    
 
     // 클라이언트 정보 얻기
     addrlen = sizeof(clientaddr);
@@ -71,8 +73,8 @@ DWORD WINAPI MainGameThread(LPVOID arg) {
    
     while (true) 
     {
-        sc_packet_mainGame recvPacket{};
-        // 수신
+        //  수신
+        cs_packet_mainGame recvPacket{};
         retval = recvn(client_sock, reinterpret_cast<char*>(&recvPacket), sizeof(recvPacket), 0);
         if (retval == SOCKET_ERROR) {
             err_display((char*)"recv()");
@@ -81,29 +83,31 @@ DWORD WINAPI MainGameThread(LPVOID arg) {
         else if (retval == 0)
             break;
 
-        // 받은 데이터 출력
-        cout << "recv packet from server : x = " << recvPacket.vec2Pos.x << ", y = " << recvPacket.vec2Pos.y << ", PID = " << recvPacket.uiPlayerID << endl;
+        cout << "수신 패킷 PID : " << recvPacket.uiPlayerID << ", Packet Type : " << recvPacket.pkType << ", || x = " << recvPacket.ptPos.x << ", y = " << recvPacket.ptPos.y << endl;
+        g_NetMgr.setPacketData(recvPacket);
 
 
-        //// 받은 데이터 출력
-        //buf[retval] = '\0';
-        //printf("[TCP/%s:%d] %s\n", inet_ntoa(clientaddr.sin_addr),
-        //    ntohs(clientaddr.sin_port), buf);
+        //  송신
+        sc_packet_mainGame data{};
+        //  패킷 조립
+        data.pkType = MAIN;
+        data.vec2Pos.x = g_NetMgr.getOtherPlayerData(gd.m_ID).m_vecPos.x;
+        data.vec2Pos.y = g_NetMgr.getOtherPlayerData(gd.m_ID).m_vecPos.y;
+        data.uiPlayerID = gd.m_ID;
 
-        // 데이터 보내기
-        cs_packet_mainGame* data = reinterpret_cast<cs_packet_mainGame*>(buf);
-        //테스트 데이터
-        data->pkType = MAIN;
-        data->ptPos.x = 500;
-        data->ptPos.y = 500;
-        data->uiPlayerID = 1;
-
-        retval = send(client_sock, (char*)data, sizeof(cs_packet_mainGame), 0);
-        if (retval == SOCKET_ERROR) {
-            err_display((char*)"send()");
-            break;
+        if (bIsIDSended)
+        {
+            SendID2Client(client_sock, clientaddr);
+            bIsIDSended = false;
         }
-
+        else
+        {
+            retval = send(client_sock, (char*)&data, sizeof(sc_packet_mainGame), 0);
+            if (retval == SOCKET_ERROR) {
+                err_display((char*)"send()");
+                break;
+            }
+        }
 
     }
 
