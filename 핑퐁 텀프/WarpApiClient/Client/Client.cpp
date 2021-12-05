@@ -28,6 +28,7 @@ global_variable Render_State render_state;
 bool g_bGameStart{ false };
 unsigned int CliendID = 0; // 서버에서 결정해주는 클라이언트 번호
 char buf[BUFSIZE + 1]; // 데이터 송수신 버퍼
+void recvID2Server(SOCKET sock);
 
 // 이 코드 모듈에 포함된 함수의 선언을 전달합니다:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
@@ -221,6 +222,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 	case WM_TIMER:
 	{
+		//recvID2Server(sock);
 		gGameFramework.OnUpdate();
 		InvalidateRgn(hWnd, NULL, false);
 	}
@@ -286,22 +288,24 @@ void Interaction()
 	// 서버와 데이터 통신
 
 	// 송신
-	cs_packet_mainGame packet{};
-	packet.ptPos = gGameFramework.GetPlayerPos();
+	sc_packet_mainGame packet{};
+	packet.vec2Pos = gGameFramework.GetPlayerPos();
 	packet.uiPlayerID = gGameFramework.GetID();
-	retval = send(sock, (char*)&packet, sizeof(cs_packet_mainGame), 0);
+	//packet.bPos = gGameFramework.GetBallPos();
+	packet.bPos.x = 100;
+	packet.bPos.y = 100;
+	retval = send(sock, (char*)&packet, sizeof(sc_packet_mainGame), 0);
 
 	if (retval == SOCKET_ERROR)
 	{
 		err_display((char*)"send()");
 		return;
 	}
-	cout << "send packet to server : x = " << packet.ptPos.x << ", y = " << packet.ptPos.y << ", PID = " << packet.uiPlayerID << endl;
+	cout << "send packet to server : x = " << packet.vec2Pos.x << ", y = " << packet.vec2Pos.y << ", PID = " << packet.uiPlayerID << ", BALLPOS = " << packet.bPos.x << endl;
 
 	// 수신
 	sc_packet_mainGame recvPacket{};
-	//len = sizeof(sc_packet_mainGame);
-	//len = recv(sock, buf, BUFSIZE, 0);
+	
 	len = recvn(sock, reinterpret_cast<char*>(&recvPacket), sizeof(sc_packet_mainGame), 0);
 	if (len == SOCKET_ERROR) {
 		err_display((char*)"recv()");
@@ -309,9 +313,10 @@ void Interaction()
 	else if (len == 0)
 		return;
 
+
 	// 받은 데이터 출력
 	//sc_packet_mainGame recvPacket = reinterpret_cast<sc_packet_mainGame&>(recvPacket);
-	cout << "recv packet from server : x = " << recvPacket.vec2Pos.x << ", y = " << recvPacket.vec2Pos.y << ", PID = " << recvPacket.uiPlayerID << endl;
+	cout << "recv packet from server : x = " << recvPacket.vec2Pos.x << ", y = " << recvPacket.vec2Pos.y << ", PID = " << recvPacket.uiPlayerID << ", BALLPOS = " << recvPacket.bPos.x << endl;
 	
 
 	switch (recvPacket.pkType)
@@ -332,9 +337,28 @@ void Interaction()
 		temp.pkType = recvPacket.pkType;
 		temp.ptPos = recvPacket.vec2Pos;
 		temp.uiPlayerID = recvPacket.uiPlayerID;
+		temp.bPos = recvPacket.bPos;
+
+		//Ball_Pos ballPos;
+		//ballPos.ballPos = BallPacket.ballPos;
 
 		gGameFramework.SetPlayerData(temp);
+		gGameFramework.SetBallPos(temp);
+
 		break;
 	}
 
+}
+
+void recvID2Server(SOCKET sock) {
+
+	int retval;
+
+	cs_packet_mainGame recvPacket{};
+	retval = recvn(sock, reinterpret_cast<char*>(&recvPacket), sizeof(recvPacket), 0);
+	if (retval == SOCKET_ERROR) {
+		err_display((char*)"recv()");
+	}
+	else if (retval == 0) 
+		return;
 }

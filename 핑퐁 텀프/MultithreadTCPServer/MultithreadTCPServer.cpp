@@ -68,14 +68,20 @@ DWORD WINAPI MainGameThread(LPVOID arg) {
     ID PID{ clientaddr, g_uiIDCnt };
     //  클라이언트에게 PID 송신
     //SendID2Client(client_sock, clientaddr);
+    
     gd.m_ID = judgePacketData(PID);
+    gd.m_ballPos.x = 300;
+    gd.m_ballPos.y = 300;
 
    
     while (true) 
     {
+
+        
+
         //  수신
         cs_packet_mainGame recvPacket{};
-        retval = recvn(client_sock, reinterpret_cast<char*>(&recvPacket), sizeof(recvPacket), 0);
+        retval = recvn(client_sock, reinterpret_cast<char*>(&recvPacket), sizeof(cs_packet_mainGame), 0);
         if (retval == SOCKET_ERROR) {
             err_display((char*)"recv()");
             break;
@@ -83,17 +89,21 @@ DWORD WINAPI MainGameThread(LPVOID arg) {
         else if (retval == 0)
             break;
 
-        cout << "수신 패킷 PID : " << recvPacket.uiPlayerID << ", Packet Type : " << recvPacket.pkType << ", || x = " << recvPacket.ptPos.x << ", y = " << recvPacket.ptPos.y << endl;
+        cout << "수신 패킷 PID : " << recvPacket.uiPlayerID << ", Packet Type : " << recvPacket.pkType << ", || x = " << recvPacket.ptPos.x << ", y = " << recvPacket.ptPos.y << ", ball = " << recvPacket.bPos.x << endl;
         g_NetMgr.setPacketData(recvPacket);
 
 
         //  송신
-        sc_packet_mainGame data{};
+        cs_packet_mainGame data{};
         //  패킷 조립
         data.pkType = MAIN;
-        data.vec2Pos.x = g_NetMgr.getOtherPlayerData(gd.m_ID).m_vecPos.x;
-        data.vec2Pos.y = g_NetMgr.getOtherPlayerData(gd.m_ID).m_vecPos.y;
-        data.uiPlayerID = gd.m_ID;
+        data.ptPos = g_NetMgr.getOtherPlayerData(gd.m_ID).m_vecPos;
+        //data.bPos = g_NetMgr.getBallData(gd.m_ID).m_ballPos;
+        data.bPos.x = g_NetMgr.getBallData(gd.m_ID).m_ballPos.x + 200;
+        data.bPos.y = g_NetMgr.getBallData(gd.m_ID).m_ballPos.y + 200;
+
+        
+        cout << "송신 패킷 PID : " << data.uiPlayerID << ", Packet Type : " << data.pkType << ", || x = " << data.ptPos.x << ", y = " << data.ptPos.y << ", ball = " << data.bPos.x << endl;
 
         if (bIsIDSended)
         {
@@ -102,7 +112,7 @@ DWORD WINAPI MainGameThread(LPVOID arg) {
         }
         else
         {
-            retval = send(client_sock, (char*)&data, sizeof(sc_packet_mainGame), 0);
+            retval = send(client_sock, (char*)&data, sizeof(cs_packet_mainGame), 0);
             if (retval == SOCKET_ERROR) {
                 err_display((char*)"send()");
                 break;
@@ -220,7 +230,7 @@ void Send_Packet(void* _packet, SOCKET _sock)
 
     // 데이터 보내기
     sc_packet_mainGame* temp = reinterpret_cast<sc_packet_mainGame*>(_packet);
-    retval = send(_sock, (char*)&temp, sizeof(sc_packet_mainGame), 0);
+    retval = send(_sock, (char*)temp, sizeof(sc_packet_mainGame), 0);
 
     if (retval == SOCKET_ERROR)
     {
