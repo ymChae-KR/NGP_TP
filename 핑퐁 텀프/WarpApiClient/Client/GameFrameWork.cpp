@@ -44,6 +44,14 @@ void WGameFramework::SetBallPos(cs_packet_mainGame _packet) {
 	m_pBall->SetBallPoint(_packet.bPos);
 }
 
+void WGameFramework::SetEnemyData(cs_packet_mainGame _packet)
+{
+	if (_packet.uiPlayerID != m_uiID)
+	{
+		m_pEnemy->SetPlayerPoint(_packet.ptPos);
+	}
+}
+
 WGameFramework::WGameFramework()
 {
 	Clear();
@@ -107,9 +115,15 @@ void WGameFramework::KeyBoard(UINT iMessage, WPARAM wParam, LPARAM lParam)
 			}
 
 			if (GetAsyncKeyState(VK_UP))
-				m_pPlayer->SetPlayerPoint(VECTOR2(m_pPlayer->getPlayerPoint().x ,m_pPlayer->getPlayerPoint().y - 10.f));
+			{
+				m_pPlayer->SetPlayerPoint(VECTOR2(m_pPlayer->getPlayerPoint().x, m_pPlayer->getPlayerPoint().y - 10.f));
+				cout << "플레이어 Pos : x = " << m_pPlayer->getPlayerPoint().x << ", y = " << m_pPlayer->getPlayerPoint().y << endl;
+			}
 			if (GetAsyncKeyState(VK_DOWN))
+			{
 				m_pPlayer->SetPlayerPoint(VECTOR2(m_pPlayer->getPlayerPoint().x, m_pPlayer->getPlayerPoint().y + 10.f));
+				cout << "플레이어 Pos : x = " << m_pPlayer->getPlayerPoint().x << ", y = " << m_pPlayer->getPlayerPoint().y << endl;
+			}
 
 		}
 		break;

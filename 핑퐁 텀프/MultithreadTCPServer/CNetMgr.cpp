@@ -38,6 +38,7 @@ PACKET_TYPE CNetMgr::setPacketData(cs_packet_mainGame _pk)
 		break;
 
 	case PACKET_TYPE::MAIN:
+
 		m_vecData[_pk.uiPlayerID].m_vecPos = _pk.ptPos;
 
 		return PACKET_TYPE::MAIN;

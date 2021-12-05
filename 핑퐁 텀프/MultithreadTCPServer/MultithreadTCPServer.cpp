@@ -1,6 +1,7 @@
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 #include "ServerData.h"
 
+//  reinitialized extern global variables
 SOCKET listen_sock;
 HANDLE hSendEvent; // 전송 완료 이벤트
 HANDLE hRecvEvent; // 수신 완료 이벤트
@@ -66,8 +67,8 @@ DWORD WINAPI MainGameThread(LPVOID arg)
         }
         else if (retval == 0)
             break;
-
-        PACKET_TYPE pType = g_NetMgr.setPacketData(recvPacket);
+        
+        PACKET_TYPE pType = g_NetMgr.setPacketData(recvPacket);     //  수신 Data를 GameScene Data에 Setting
 
         //  송신
         if (!g_bGameStart)
@@ -81,7 +82,9 @@ DWORD WINAPI MainGameThread(LPVOID arg)
             data.uiPlayerID = gd.m_ID;
 
             retval = send(client_sock, (char*)&data, sizeof(sc_packet_mainGame), 0);    
-            if (retval == SOCKET_ERROR) {
+
+            if (retval == SOCKET_ERROR) 
+            {
                 err_display((char*)"send()");
                 break;
             }
