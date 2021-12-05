@@ -85,6 +85,7 @@ struct cs_packet_mainGame
 {
 	PACKET_TYPE pkType;
 	VECTOR2 ptPos;
+	VECTOR2 bPos;
 	UINT uiPlayerID;
 };
 
@@ -92,7 +93,16 @@ struct sc_packet_mainGame
 {
 	PACKET_TYPE pkType;
 	VECTOR2		vec2Pos;
+	VECTOR2		bPos;
 	UINT		uiPlayerID;
 };
+
+//struct Ball_Pos {
+//	
+//	VECTOR2 ballPos;
+//	//UINT ballID;
+//	//bool ballState;
+//};
+//
 
 #pragma pack (pop)

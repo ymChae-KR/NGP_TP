@@ -59,7 +59,7 @@ DWORD WINAPI MainGameThread(LPVOID arg)
     {
         //  ¼ö½Å
         cs_packet_mainGame recvPacket{};
-        retval = recvn(client_sock, reinterpret_cast<char*>(&recvPacket), sizeof(recvPacket), 0);
+        retval = recvn(client_sock, reinterpret_cast<char*>(&recvPacket), sizeof(cs_packet_mainGame), 0);
         if (retval == SOCKET_ERROR) {
             err_display((char*)"recv()");
             break;

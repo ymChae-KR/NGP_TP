@@ -36,6 +36,12 @@ void WGameFramework::SetClientID(UINT _ID)
 void WGameFramework::SetPlayerPos(cs_packet_mainGame _packet)
 {
 	m_pEnemy->SetPlayerPoint(_packet.ptPos);
+	
+}
+
+void WGameFramework::SetBallPos(cs_packet_mainGame _packet) {
+
+	m_pBall->SetBallPoint(_packet.bPos);
 }
 
 WGameFramework::WGameFramework()
@@ -43,9 +49,11 @@ WGameFramework::WGameFramework()
 	Clear();
 	m_pPlayer = new Player;
 	m_pEnemy = new Player;
+	m_pBall = new Ball;
 
 	m_pPlayer->SetPlayerPoint(VECTOR2(0.f, 0.f));
 	m_pEnemy->SetPlayerPoint(VECTOR2(0.f, 0.f));
+	m_pBall->SetBallPoint(VECTOR2(0.f, 0.f));
 }
 
 WGameFramework::~WGameFramework()
@@ -69,6 +77,11 @@ void WGameFramework::Create(HWND hWnd)
 	//m_uiID = data->uiPlayerID;
 }
 
+void EllipseR(HDC hdc, int x, int y, int r) { //(x,y) 를 중심으로 하는 반지름 r의 공 그리기
+
+	Ellipse(hdc, x - r, y - r, x + r, y + r);
+}
+
 void WGameFramework::OnDraw(HDC hdc)
 {
 	Rectangle(hdc, m_pPlayer->getPlayerPoint().x + 10, m_pPlayer->getPlayerPoint().y + 10,
@@ -77,7 +90,14 @@ void WGameFramework::OnDraw(HDC hdc)
 	Rectangle(hdc, m_pEnemy->getPlayerPoint().x + 10, m_pEnemy->getPlayerPoint().y + 10,
 		m_pEnemy->getPlayerPoint().x + 40, m_pEnemy->getPlayerPoint().y + 100);
 
+	//Ellipse(hdc, m_pBall->getBallPoint().x + 30, m_pBall->getBallPoint().x + 30,
+		//m_pBall->getBallPoint().x + 30, m_pBall->getBallPoint().x + 30);
+	EllipseR(hdc, m_pBall->getBallPoint().x + 100, m_pBall->getBallPoint().y + 100,10);
+
+
 }
+
+
 
 void WGameFramework::OnUpdate(const float frameTime)
 {
