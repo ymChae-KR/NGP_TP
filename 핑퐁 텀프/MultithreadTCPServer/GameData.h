@@ -21,16 +21,16 @@ struct ID
 
 struct cs_packet_mainGame
 {
-	PACKET_TYPE pkType;
-	VECTOR2 ptPos;
-	unsigned int uiPlayerID;
+	PACKET_TYPE		 pkType;
+	unsigned int	 uiPlayerID;
+	VECTOR2			 ptPos;
 };
 
 struct sc_packet_mainGame
 {
-	PACKET_TYPE pkType;
-	VECTOR2		vec2Pos;
+	PACKET_TYPE			pkType;
 	unsigned int		uiPlayerID;
+	VECTOR2				vec2Pos;
 };
 
 struct sc_packet_EndGame 

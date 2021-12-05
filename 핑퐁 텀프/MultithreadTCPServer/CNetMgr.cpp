@@ -2,6 +2,12 @@
 
 void CNetMgr::setPacketData(cs_packet_mainGame _pk)
 {
+	if (!(_pk.uiPlayerID == 0 || _pk.uiPlayerID == 1 || _pk.uiPlayerID == 2))
+	{
+		cout << "쓰레기 패킷 recv" << endl;
+		return;
+	}
+
 	switch (_pk.pkType)
 	{
 	case PACKET_TYPE::NONE:

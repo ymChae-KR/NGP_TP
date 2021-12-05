@@ -25,7 +25,6 @@ SOCKET init_Client_Socket(SOCKET listen_sock) { //연결용 소켓 생성
 
 DWORD WINAPI MainGameThread(LPVOID arg) 
 {
-
     SOCKET client_sock = (SOCKET)arg;
     SOCKADDR_IN clientaddr;
 
@@ -44,11 +43,6 @@ DWORD WINAPI MainGameThread(LPVOID arg)
     g_clientIDManager[g_uiIDCnt].sc_Client_Address = clientaddr;
     g_clientIDManager[g_uiIDCnt].uiID = g_uiIDCnt++;
 
-    if (g_uiIDCnt > 1)
-    {
-        int a = 0;
-    }
-   
     while (true) 
     {
         //  수신
@@ -63,7 +57,6 @@ DWORD WINAPI MainGameThread(LPVOID arg)
 
         //cout << "수신 패킷 PID : " << recvPacket.uiPlayerID << ", Packet Type : " << recvPacket.pkType << ", || x = " << recvPacket.ptPos.x << ", y = " << recvPacket.ptPos.y << endl;
         g_NetMgr.setPacketData(recvPacket);
-
 
         //  송신
         if (!g_bGameStart)
@@ -80,7 +73,7 @@ DWORD WINAPI MainGameThread(LPVOID arg)
             data.vec2Pos = g_NetMgr.getOtherPlayerData(gd.m_ID).m_vecPos;
             data.uiPlayerID = gd.m_ID;
 
-            retval = send(client_sock, (char*)&data, sizeof(sc_packet_mainGame), 0);
+            retval = send(client_sock, (char*)&data, sizeof(sc_packet_mainGame), 0);    
             if (retval == SOCKET_ERROR) {
                 err_display((char*)"send()");
                 break;
