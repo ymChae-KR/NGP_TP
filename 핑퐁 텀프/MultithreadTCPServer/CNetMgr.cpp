@@ -16,7 +16,6 @@ void CNetMgr::update()
 			system("cls"); 
 			cout << "Ãæµ¹ ! " << endl;
 		}
-		
 	}
 }
 

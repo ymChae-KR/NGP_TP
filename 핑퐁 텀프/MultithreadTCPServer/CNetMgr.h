@@ -29,6 +29,8 @@ public:
 	gameData getOtherPlayerData(UINT _id) { return m_vecData[_id]; }
 	gameData getBallData(UINT _id) { return m_vecData[_id]; }
 
+	Ball	 getBall() { return m_Ball; }
+
 	//	setter
 	void setData(gameData _g) { m_vecData.push_back(_g); }
 	PACKET_TYPE setPacketData(cs_packet_mainGame _pk);

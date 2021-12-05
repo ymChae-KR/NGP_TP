@@ -80,6 +80,7 @@ DWORD WINAPI MainGameThread(LPVOID arg)
             data.pkType = MAIN;
             data.vec2Pos = g_NetMgr.getOtherPlayerData(gd.m_ID).m_vecPos;
             data.uiPlayerID = gd.m_ID;
+            data.bPos = g_NetMgr.getBall().getBallPoint();
 
             retval = send(client_sock, (char*)&data, sizeof(sc_packet_mainGame), 0);    
 
@@ -89,6 +90,8 @@ DWORD WINAPI MainGameThread(LPVOID arg)
                 break;
             }
         }
+
+        g_NetMgr.update();
     }
 
     // closesocket()
