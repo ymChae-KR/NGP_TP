@@ -8,7 +8,7 @@ struct gameData
 	UINT		m_ID;		//	각 플레이어 ID
 	VECTOR2		m_vecPos;	//	플레이어 Pos
 	VECTOR2		m_ballPos;
-
+	PACKET_TYPE	m_status{ PACKET_TYPE::NONE };	//	클라 별 게임 상태 저장 변수
 };
 
 
@@ -29,8 +29,7 @@ public:
 	
 	//	setter
 	void setData(gameData _g) { m_vecData.push_back(_g); }
-	void setPacketData(cs_packet_mainGame _pk) { m_vecData[_pk.uiPlayerID].m_vecPos = _pk.ptPos; m_vecData[_pk.uiPlayerID].m_ballPos = _pk.bPos;}
-
+	PACKET_TYPE setPacketData(cs_packet_mainGame _pk);
 public:
 	CNetMgr();
 	~CNetMgr();

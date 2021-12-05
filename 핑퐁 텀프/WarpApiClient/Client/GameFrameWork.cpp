@@ -7,7 +7,7 @@ void WGameFramework::SetPlayerData(cs_packet_mainGame _packet)
 {
 	if (_packet.uiPlayerID == m_uiID)
 	{
-		m_uiID = _packet.uiPlayerID;
+		//m_uiID = _packet.uiPlayerID;
 		m_pPlayer->SetPlayerPoint(_packet.ptPos);
 	}
 }
@@ -71,10 +71,6 @@ void WGameFramework::Clear()
 void WGameFramework::Create(HWND hWnd)
 {
 	m_hWnd = hWnd;
-	 
-	//	서버에서 클라 아이디 수신 후 PID 초기화
-	//cs_packet_mainGame* data = reinterpret_cast<cs_packet_mainGame*>(Recv_Packet());
-	//m_uiID = data->uiPlayerID;
 }
 
 void EllipseR(HDC hdc, int x, int y, int r) { //(x,y) 를 중심으로 하는 반지름 r의 공 그리기
@@ -90,14 +86,8 @@ void WGameFramework::OnDraw(HDC hdc)
 	Rectangle(hdc, m_pEnemy->getPlayerPoint().x + 10, m_pEnemy->getPlayerPoint().y + 10,
 		m_pEnemy->getPlayerPoint().x + 40, m_pEnemy->getPlayerPoint().y + 100);
 
-	//Ellipse(hdc, m_pBall->getBallPoint().x + 30, m_pBall->getBallPoint().x + 30,
-		//m_pBall->getBallPoint().x + 30, m_pBall->getBallPoint().x + 30);
 	EllipseR(hdc, m_pBall->getBallPoint().x + 100, m_pBall->getBallPoint().y + 100,10);
-
-
 }
-
-
 
 void WGameFramework::OnUpdate(const float frameTime)
 {

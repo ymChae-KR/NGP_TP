@@ -67,15 +67,11 @@ DWORD WINAPI MainGameThread(LPVOID arg)
         else if (retval == 0)
             break;
 
-        g_NetMgr.setPacketData(recvPacket);
+        PACKET_TYPE pType = g_NetMgr.setPacketData(recvPacket);
 
         //  송신
         if (!g_bGameStart)
-        {
-            //  클라이언트에게 PID 송신
-            SendID2Client(client_sock, clientaddr);
-            
-        }
+            SendID2Client(client_sock, pType);
         else
         {
             //  패킷 조립
@@ -90,7 +86,6 @@ DWORD WINAPI MainGameThread(LPVOID arg)
                 break;
             }
         }
-
     }
 
     // closesocket()

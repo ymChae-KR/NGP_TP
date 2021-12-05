@@ -26,9 +26,9 @@ void err_display(char* msg);
 int recvn(SOCKET s, char* buf, int len, int flags);
 
 //	커스텀 패킷 송수신 함수
-void SendID2Client(SOCKET _sock, SOCKADDR_IN _clientaddr);
+void SendID2Client(SOCKET _sock, PACKET_TYPE _pType);
 void Recv_Packet_Assembly(char* _p, PACKET_TYPE _pType);
-void Send_Packet(void* _packet, SOCKET _sock);
+void Send_Packet(sc_packet_mainGame _packet, SOCKET _sock);
 UINT judgePacketData(ID _id);
 
 //	멀티쓰레드 관리 함수
