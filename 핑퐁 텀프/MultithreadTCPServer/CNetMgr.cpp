@@ -13,8 +13,16 @@ void CNetMgr::update()
 		BOOL bTemp = Collision(m_vecData[i].m_vecPos, m_Ball.getBallPoint());	//	충돌 시 return true
 		if (bTemp)
 		{
-			system("cls"); 
-			cout << "충돌 ! " << endl;
+			VECTOR2 changeForce = m_Ball.getBallForce();
+			
+			//	일단 
+			if (rand() % 2)
+				changeForce.y *= -1.f;
+			else
+				changeForce.y *= 1.8f;
+			changeForce.x *= -1.f;
+			m_Ball.SetBallForce(changeForce);
+			return;
 		}
 	}
 }
@@ -69,9 +77,7 @@ PACKET_TYPE CNetMgr::setPacketData(cs_packet_mainGame _pk)
 		break;
 
 	case PACKET_TYPE::MAIN:
-
 		m_vecData[_pk.uiPlayerID].m_vecPos = _pk.ptPos;
-		//m_vecData[_pk.uiPlayerID].m_ballPos = _pk.bPos;
 
 		return PACKET_TYPE::MAIN;
 		break;
