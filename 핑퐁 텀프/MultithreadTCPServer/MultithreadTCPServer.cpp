@@ -1,6 +1,15 @@
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 #include "ServerData.h"
 
+SOCKET listen_sock;
+HANDLE hSendEvent; // 전송 완료 이벤트
+HANDLE hRecvEvent; // 수신 완료 이벤트
+UINT ThreadNum = 1;
+
+ID g_clientIDManager[2]{};
+UINT g_uiIDCnt{ 0 };
+BOOL g_bGameStart{ false };
+
 static CNetMgr g_NetMgr;
 
 SOCKET init_Client_Socket(SOCKET listen_sock) { //연결용 소켓 생성
@@ -43,6 +52,9 @@ DWORD WINAPI MainGameThread(LPVOID arg)
     g_clientIDManager[g_uiIDCnt].sc_Client_Address = clientaddr;
     g_clientIDManager[g_uiIDCnt].uiID = g_uiIDCnt++;
 
+    if (g_uiIDCnt > 1)
+        int a = 0;
+
     while (true) 
     {
         //  수신
@@ -55,7 +67,6 @@ DWORD WINAPI MainGameThread(LPVOID arg)
         else if (retval == 0)
             break;
 
-        //cout << "수신 패킷 PID : " << recvPacket.uiPlayerID << ", Packet Type : " << recvPacket.pkType << ", || x = " << recvPacket.ptPos.x << ", y = " << recvPacket.ptPos.y << endl;
         g_NetMgr.setPacketData(recvPacket);
 
         //  송신

@@ -89,14 +89,13 @@ void Send_Packet(void* _packet, SOCKET _sock)
     }
 
     //printf("Send_Packet()함수로 패킷을 보냈습니다.\r\n", retval);
-
 }
 
 void SendID2Client(SOCKET _sock, SOCKADDR_IN _clientaddr)
 {
     sc_packet_mainGame packet{};
     packet.pkType = PACKET_TYPE::START;
-    packet.uiPlayerID = g_clientIDManager[g_uiIDCnt].uiID;
+    packet.uiPlayerID = g_clientIDManager[g_uiIDCnt - 1].uiID;
 
     Send_Packet(&packet, _sock);
     cout << g_uiIDCnt << "번째 클라이언트 접속 후 클라 ID : " << packet.uiPlayerID << "송신" << endl;

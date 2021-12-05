@@ -8,6 +8,8 @@
 #include <stdio.h>
 #include <iostream>
 #include <vector>
+#include <mutex>
+
 #include "CNetMgr.h"
 #include "GameData.h"
 
@@ -33,12 +35,12 @@ UINT judgePacketData(ID _id);
 DWORD WINAPI MainGameThread(LPVOID arg);
 DWORD WINAPI EndGameThread(LPVOID arg);
 
-static SOCKET listen_sock;
-static HANDLE hSendEvent; // 전송 완료 이벤트
-static HANDLE hRecvEvent; // 수신 완료 이벤트
-static unsigned int ThreadNum = 1;
+extern SOCKET listen_sock;
+extern HANDLE hSendEvent; // 전송 완료 이벤트
+extern HANDLE hRecvEvent; // 수신 완료 이벤트
+extern UINT ThreadNum;
  
-static ID g_clientIDManager[2]{};      //  클라이언트 ID 부여 후 이를 관리할 컨테이너, 차후에 서버 프로젝트의 mainGame 안에서 관리 할 예정
-static UINT g_uiIDCnt{ 0 };            //  각 클라이언트 ID 부여를 위한 Count
-static BOOL g_bGameStart{ false };     //  게임 시작 여부 확인 변수
+extern ID g_clientIDManager[2];      //  클라이언트 ID 부여 후 이를 관리할 컨테이너, 차후에 서버 프로젝트의 mainGame 안에서 관리 할 예정
+extern UINT g_uiIDCnt;            //  각 클라이언트 ID 부여를 위한 Count
+extern BOOL g_bGameStart;     //  게임 시작 여부 확인 변수
 
