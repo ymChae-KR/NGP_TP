@@ -9,7 +9,13 @@ void CNetMgr::setPacketData(cs_packet_mainGame _pk)
 		break;
 		
 	case PACKET_TYPE::START:
-		g_clientIDManager[g_uiIDCnt].uiID = g_uiIDCnt++;
+		
+		if (g_uiIDCnt == 1)
+		{
+			int a = 0;
+		}
+		if (g_uiIDCnt > 1)  //  서버에 접속한 클라가 1명보다 많으면 게임을 시작하라
+			g_bGameStart = true;
 		break;
 
 	case PACKET_TYPE::MAIN:

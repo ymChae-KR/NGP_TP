@@ -1,6 +1,4 @@
-﻿
-
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "Client.h"
 #include "GameFramework.h"
 
@@ -20,7 +18,6 @@ SOCKADDR_IN serveraddr;
 HANDLE hThread;
 DWORD WINAPI GameThread(LPVOID arg);
 HANDLE hEvent; // 이벤트
-
 
 global_variable WGameFramework gGameFramework;
 global_variable Render_State render_state;
@@ -284,7 +281,11 @@ void Interaction()
 	int len;
 
 	// 서버와 데이터 통신
-
+		
+	if (g_GameStatus == PACKET_TYPE::START)
+	{
+		int a = 0;
+	}
 	// 송신
 	cs_packet_mainGame packet{};
 	packet.pkType = g_GameStatus;
@@ -319,9 +320,9 @@ void Interaction()
 		return;
 
 	case PACKET_TYPE::START:
-		gGameFramework.SetClientID(recvPacket.pkType);
+		gGameFramework.SetClientID(recvPacket.uiPlayerID);
 		g_GameStatus = PACKET_TYPE::MAIN;
-		cout << "Packet type is START, my PID is : " << recvPacket.pkType << endl;
+		cout << "Packet type is START, my PID is : " << gGameFramework.GetID() << endl;
 		break;
 
 	case PACKET_TYPE::MAIN:

@@ -88,7 +88,7 @@ void Send_Packet(void* _packet, SOCKET _sock)
         return;
     }
 
-    printf("Send_Packet()함수로 패킷을 보냈습니다.\r\n", retval);
+    //printf("Send_Packet()함수로 패킷을 보냈습니다.\r\n", retval);
 
 }
 

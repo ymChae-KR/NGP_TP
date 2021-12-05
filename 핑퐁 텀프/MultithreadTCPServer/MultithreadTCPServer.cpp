@@ -41,9 +41,13 @@ DWORD WINAPI MainGameThread(LPVOID arg)
     gameData gd;                    //  클라 1번에 송신할 클라2번의 데이터 판단용 변수    
     ID PID{ clientaddr, g_uiIDCnt };
     gd.m_ID = judgePacketData(PID);
-
     g_clientIDManager[g_uiIDCnt].sc_Client_Address = clientaddr;
-    //g_clientIDManager[g_uiIDCnt].uiID = g_uiIDCnt++;
+    g_clientIDManager[g_uiIDCnt].uiID = g_uiIDCnt++;
+
+    if (g_uiIDCnt > 1)
+    {
+        int a = 0;
+    }
    
     while (true) 
     {
@@ -66,8 +70,7 @@ DWORD WINAPI MainGameThread(LPVOID arg)
         {
             //  클라이언트에게 PID 송신
             SendID2Client(client_sock, clientaddr);
-            if (g_uiIDCnt > 1)  //  서버에 접속한 클라가 1명보다 많으면 게임을 시작하라
-                g_bGameStart = true;
+            
         }
         else
         {
