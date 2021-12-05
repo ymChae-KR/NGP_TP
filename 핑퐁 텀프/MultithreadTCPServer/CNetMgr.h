@@ -18,7 +18,8 @@ struct gameData
 class CNetMgr
 {
 private:
-	std::vector<gameData> m_vecData;
+	std::vector<gameData> m_vecData;		//	플레이어 객체 관리할 컨테이너
+	
 
 public:
 

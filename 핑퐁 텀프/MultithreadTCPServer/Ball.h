@@ -1,5 +1,5 @@
 #pragma once
-#include "define.h"
+#include "GameData.h"
 
 class Ball
 {
