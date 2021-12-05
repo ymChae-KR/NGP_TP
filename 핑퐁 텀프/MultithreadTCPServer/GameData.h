@@ -1,4 +1,19 @@
 #pragma once
+#include <winsock2.h>
+#include <WS2tcpip.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <iostream>
+
+
+struct VECTOR2
+{
+	float x;
+	float y;
+
+	void Set(float _x, float _y) { x = _x; y = _y; }
+};
+
 enum PACKET_TYPE
 {
 	NONE,
@@ -8,11 +23,6 @@ enum PACKET_TYPE
 
 };
 
-struct VECTOR2
-{
-	float x;
-	float y;
-};
 
 struct ID
 {
@@ -36,28 +46,4 @@ struct sc_packet_mainGame
 	VECTOR2		vec2Pos;
 	VECTOR2		bPos;
 	UINT		uiPlayerID;
-};
-
-struct sc_packet_EndGame
-{
-	bool bResult;
-};
-
-struct Ball_Pos {
-
-	VECTOR2 ballPos;
-	//UINT ballID;
-	//bool ballState;
-};
-
-class MainGame
-{
-public:
-	MainGame();
-	~MainGame();
-
-public:
-	void BallUpdate();
-	void playerUpdate();
-	void notifyCollisions();
 };

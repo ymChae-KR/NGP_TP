@@ -97,7 +97,7 @@ void WGameFramework::OnDraw(HDC hdc)
 	Rectangle(hdc, m_pEnemy->getPlayerPoint().x + 10, m_pEnemy->getPlayerPoint().y + 10,
 		m_pEnemy->getPlayerPoint().x + 40, m_pEnemy->getPlayerPoint().y + 100);
 
-	EllipseR(hdc, ball_x + 100, ball_y + 100, 10);
+	EllipseR(hdc, ball_x, ball_y, 10);
 	ball_x += 10;
 }
 

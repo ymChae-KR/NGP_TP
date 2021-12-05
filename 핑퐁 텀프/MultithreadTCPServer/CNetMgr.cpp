@@ -1,4 +1,35 @@
 #include "CNetMgr.h"
+#include "Collision.h"
+
+void CNetMgr::update()
+{
+	VECTOR2 temp{};
+	temp.x = m_Ball.getBallPoint().x + ( m_Ball.getBallForce().x * 0.5f );
+	temp.y = m_Ball.getBallPoint().y + ( m_Ball.getBallForce().y * 0.5f );
+	m_Ball.SetBallPoint(temp);
+
+	for (int i = 0; i < 2; ++i)
+	{
+		BOOL bTemp = Collision(m_vecData[i].m_vecPos, m_Ball.getBallPoint());	//	Ãæµ¹ ½Ã return true
+		if (bTemp)
+		{
+			system("cls"); 
+			cout << "Ãæµ¹ ! " << endl;
+		}
+		
+	}
+}
+
+BOOL CNetMgr::Collision(VECTOR2 _playerPos, VECTOR2 _ballPos)
+{
+	COLLISON_PLAYER player{_playerPos.x + 10.f, _playerPos.y + 10.f, _playerPos.x + 40.f, _playerPos.y + 100.f };	//	»¡°­
+	COLLISON_PLAYER	ball{ _ballPos.x + 10.f, _ballPos.y + 10.f, _ballPos.x + 10.f, _ballPos.y + 10.f };				//	ÆÄ¶û
+
+	if (ball.Right > player.Left && player.Right > ball.Left && ball.Top < player.Bottom && player.Top < ball.Bottom)
+		return true;
+
+	return false;
+}
 
 PACKET_TYPE CNetMgr::setPacketData(cs_packet_mainGame _pk)
 {
@@ -17,7 +48,7 @@ PACKET_TYPE CNetMgr::setPacketData(cs_packet_mainGame _pk)
 
 		m_vecData[_pk.uiPlayerID].m_status = PACKET_TYPE::READY;
 		m_vecData[_pk.uiPlayerID].m_vecPos = _pk.ptPos;
-		m_vecData[_pk.uiPlayerID].m_ballPos = _pk.bPos;
+		//m_vecData[_pk.uiPlayerID].m_ballPos = _pk.bPos;
 
 		return PACKET_TYPE::READY;
 		break;

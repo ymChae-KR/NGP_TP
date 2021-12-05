@@ -10,8 +10,8 @@
 #include <vector>
 #include <mutex>
 
-#include "CNetMgr.h"
 #include "GameData.h"
+#include "CNetMgr.h"
 
 #define SERVERPORT 9000
 #define BUFSIZE    512

@@ -27,7 +27,8 @@ void simulate_player(float* p, float* dp, float ddp, float dt) {
 }
 
 bool aabb_vs_aabb(float p1x, float p1y, float hs1x, float hs1y,
-	float p2x, float p2y, float hs2x, float hs2y) {
+	float p2x, float p2y, float hs2x, float hs2y)
+{
 	return (p1x + hs1x > p2x - hs2x &&
 		p1x - hs1x < p2x + hs2x &&
 		p1y + hs1y > p2y - hs2y &&
