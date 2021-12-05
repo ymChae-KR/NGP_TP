@@ -51,9 +51,6 @@ DWORD WINAPI MainGameThread(LPVOID arg)
    
     while (true) 
     {
-
-        
-
         //  수신
         cs_packet_mainGame recvPacket{};
         retval = recvn(client_sock, reinterpret_cast<char*>(&recvPacket), sizeof(cs_packet_mainGame), 0);
@@ -68,15 +65,7 @@ DWORD WINAPI MainGameThread(LPVOID arg)
         g_NetMgr.setPacketData(recvPacket);
 
 
-        //  송신
-        sc_packet_mainGame data{};
-        //  패킷 조립
-        data.pkType = MAIN;
-        data.vec2Pos.x = g_NetMgr.getOtherPlayerData(gd.m_ID).m_vecPos.x;
-        data.vec2Pos.y = g_NetMgr.getOtherPlayerData(gd.m_ID).m_vecPos.y;
-        data.uiPlayerID = gd.m_ID;
-
-        if (bIsIDSended)
+        if (!g_bGameStart)
         {
             //  클라이언트에게 PID 송신
             SendID2Client(client_sock, clientaddr);
