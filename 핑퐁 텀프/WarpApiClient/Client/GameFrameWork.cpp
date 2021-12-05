@@ -7,7 +7,7 @@ void WGameFramework::SetPlayerData(cs_packet_mainGame _packet)
 {
 	if (_packet.uiPlayerID == m_uiID)
 	{
-		m_uiID = _packet.uiPlayerID;
+		//m_uiID = _packet.uiPlayerID;
 		m_pPlayer->SetPlayerPoint(_packet.ptPos);
 	}
 }
@@ -36,7 +36,7 @@ void WGameFramework::SetClientID(UINT _ID)
 void WGameFramework::SetPlayerPos(cs_packet_mainGame _packet)
 {
 	m_pEnemy->SetPlayerPoint(_packet.ptPos);
-	
+
 }
 
 void WGameFramework::SetBallPos(cs_packet_mainGame _packet) {
@@ -71,10 +71,6 @@ void WGameFramework::Clear()
 void WGameFramework::Create(HWND hWnd)
 {
 	m_hWnd = hWnd;
-	 
-	//	서버에서 클라 아이디 수신 후 PID 초기화
-	//cs_packet_mainGame* data = reinterpret_cast<cs_packet_mainGame*>(Recv_Packet());
-	//m_uiID = data->uiPlayerID;
 }
 
 void EllipseR(HDC hdc, int x, int y, int r) { //(x,y) 를 중심으로 하는 반지름 r의 공 그리기
@@ -84,20 +80,20 @@ void EllipseR(HDC hdc, int x, int y, int r) { //(x,y) 를 중심으로 하는 반지름 r�
 
 void WGameFramework::OnDraw(HDC hdc)
 {
+	float ball_x = m_pBall->getBallPoint().x;
+	float ball_y = m_pBall->getBallPoint().y;
+
 	Rectangle(hdc, m_pPlayer->getPlayerPoint().x + 10, m_pPlayer->getPlayerPoint().y + 10,
 		m_pPlayer->getPlayerPoint().x + 40, m_pPlayer->getPlayerPoint().y + 100);
 
 	Rectangle(hdc, m_pEnemy->getPlayerPoint().x + 10, m_pEnemy->getPlayerPoint().y + 10,
 		m_pEnemy->getPlayerPoint().x + 40, m_pEnemy->getPlayerPoint().y + 100);
 
-	//Ellipse(hdc, m_pBall->getBallPoint().x + 30, m_pBall->getBallPoint().x + 30,
-		//m_pBall->getBallPoint().x + 30, m_pBall->getBallPoint().x + 30);
-	EllipseR(hdc, m_pBall->getBallPoint().x + 100, m_pBall->getBallPoint().y + 100,10);
-
+	EllipseR(hdc, ball_x + 100, ball_y + 100, 10);
+	
+	ball_x += 10;
 
 }
-
-
 
 void WGameFramework::OnUpdate(const float frameTime)
 {
@@ -108,28 +104,28 @@ void WGameFramework::KeyBoard(UINT iMessage, WPARAM wParam, LPARAM lParam)
 {
 	switch (iMessage)
 	{
-		case WM_KEYDOWN:
+	case WM_KEYDOWN:
+	{
+		if (wParam == VK_Q)
 		{
-			if (wParam == VK_Q)
-			{
-				SendMessage(m_hWnd, WM_DESTROY, 0, 0);
-				return;
-			}
-
-			if (GetAsyncKeyState(VK_UP))
-				m_pPlayer->SetPlayerPoint(VECTOR2(m_pPlayer->getPlayerPoint().x ,m_pPlayer->getPlayerPoint().y - 10.f));
-			if (GetAsyncKeyState(VK_DOWN))
-				m_pPlayer->SetPlayerPoint(VECTOR2(m_pPlayer->getPlayerPoint().x, m_pPlayer->getPlayerPoint().y + 10.f));
-
+			SendMessage(m_hWnd, WM_DESTROY, 0, 0);
+			return;
 		}
-		break;
-		
 
-		case WM_KEYUP:
-		{
+		if (GetAsyncKeyState(VK_UP))
+			m_pPlayer->SetPlayerPoint(VECTOR2(m_pPlayer->getPlayerPoint().x, m_pPlayer->getPlayerPoint().y - 10.f));
+		if (GetAsyncKeyState(VK_DOWN))
+			m_pPlayer->SetPlayerPoint(VECTOR2(m_pPlayer->getPlayerPoint().x, m_pPlayer->getPlayerPoint().y + 10.f));
 
-		}
-		break;
+	}
+	break;
+
+
+	case WM_KEYUP:
+	{
+
+	}
+	break;
 
 
 	}

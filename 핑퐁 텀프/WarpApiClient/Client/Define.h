@@ -9,6 +9,7 @@ enum PACKET_TYPE
 {
 	NONE,
 	START,
+	READY,
 	MAIN,
 
 };

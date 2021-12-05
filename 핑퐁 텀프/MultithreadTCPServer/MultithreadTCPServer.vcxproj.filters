@@ -30,9 +30,6 @@
     <ClCompile Include="CNetMgr.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="server.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="ServerData.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>

@@ -74,30 +74,26 @@ void recvData(SOCKET sock) {
 
 }
 
-void Send_Packet(void* _packet, SOCKET _sock)
+void Send_Packet(sc_packet_mainGame _packet, SOCKET _sock)
 {
-    //char* packet = reinterpret_cast<char*>(_packet);
-
-    // 데이터 보내기
-    sc_packet_mainGame* temp = reinterpret_cast<sc_packet_mainGame*>(_packet);
-    int retval = send(_sock, (char*)temp, sizeof(sc_packet_mainGame), 0);
+    int retval = send(_sock, (char*)&_packet, sizeof(sc_packet_mainGame), 0);
 
     if (retval == SOCKET_ERROR)
     {
-        err_display((char*)"send()");
+        err_display((char*)"Send_Packet()");
         return;
     }
-
-    //printf("Send_Packet()함수로 패킷을 보냈습니다.\r\n", retval);
 }
 
-void SendID2Client(SOCKET _sock, SOCKADDR_IN _clientaddr)
+void SendID2Client(SOCKET _sock, PACKET_TYPE _pType)
 {
     sc_packet_mainGame packet{};
-    packet.pkType = PACKET_TYPE::START;
+    if (_pType == PACKET_TYPE::NONE)
+        _pType = PACKET_TYPE::START;
+    packet.pkType = _pType;
     packet.uiPlayerID = g_clientIDManager[g_uiIDCnt - 1].uiID;
 
-    Send_Packet(&packet, _sock);
+    Send_Packet(packet, _sock);
     cout << g_uiIDCnt << "번째 클라이언트 접속 후 클라 ID : " << packet.uiPlayerID << "송신" << endl;
 }
 

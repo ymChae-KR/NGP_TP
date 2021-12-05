@@ -1,11 +1,11 @@
 #include "CNetMgr.h"
 
-void CNetMgr::setPacketData(cs_packet_mainGame _pk)
+PACKET_TYPE CNetMgr::setPacketData(cs_packet_mainGame _pk)
 {
 	if (!(_pk.uiPlayerID == 0 || _pk.uiPlayerID == 1 || _pk.uiPlayerID == 2))
 	{
 		cout << "쓰레기 패킷 recv" << endl;
-		return;
+		return PACKET_TYPE::NONE;
 	}
 
 	switch (_pk.pkType)
@@ -16,18 +16,39 @@ void CNetMgr::setPacketData(cs_packet_mainGame _pk)
 		
 	case PACKET_TYPE::START:
 		
-		if (g_uiIDCnt == 1)
+		m_vecData[_pk.uiPlayerID].m_status = PACKET_TYPE::READY;
+		m_vecData[_pk.uiPlayerID].m_vecPos = _pk.ptPos;
+		m_vecData[_pk.uiPlayerID].m_ballPos = _pk.bPos;
+
+		return PACKET_TYPE::READY;
+		break;
+
+	case PACKET_TYPE::READY:
+
+		for (int i = 0; i < 2; ++i)
 		{
-			int a = 0;
+			if (m_vecData[i].m_status != PACKET_TYPE::READY)
+			{
+				g_bGameStart = false;
+				return PACKET_TYPE::READY;
+			}
 		}
-		if (g_uiIDCnt > 1)  //  서버에 접속한 클라가 1명보다 많으면 게임을 시작하라
-			g_bGameStart = true;
+
+		g_bGameStart = true;
+
+		return PACKET_TYPE::MAIN;
 		break;
 
 	case PACKET_TYPE::MAIN:
+		
 		m_vecData[_pk.uiPlayerID].m_vecPos = _pk.ptPos;
+		m_vecData[_pk.uiPlayerID].m_ballPos = _pk.bPos;
+
+		return PACKET_TYPE::MAIN;
 		break;
 	}
+
+	return PACKET_TYPE::NONE;
 }
 
 CNetMgr::CNetMgr()

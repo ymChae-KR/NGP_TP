@@ -283,11 +283,7 @@ void Interaction()
 	int len;
 
 	// 서버와 데이터 통신
-		
-	if (g_GameStatus == PACKET_TYPE::START)
-	{
-		int a = 0;
-	}
+
 	// 송신
 	cs_packet_mainGame packet{};
 	packet.pkType = g_GameStatus;
@@ -300,7 +296,8 @@ void Interaction()
 		err_display((char*)"send()");
 		return;
 	}
-	cout << "send packet to server : x = " << packet.vec2Pos.x << ", y = " << packet.vec2Pos.y << ", PID = " << packet.uiPlayerID << ", BALLPOS = " << packet.bPos.x << endl;
+
+	/*cout << "send packet to server : x = " << packet.ptPos.x << ", y = " << packet.ptPos.y << ", PID = " << packet.uiPlayerID << ", BALLPOS = " << packet.bPos.x << endl;*/
 
 	// 수신
 	sc_packet_mainGame recvPacket{};
@@ -313,9 +310,8 @@ void Interaction()
 
 
 	// 받은 데이터 출력
-	//sc_packet_mainGame recvPacket = reinterpret_cast<sc_packet_mainGame&>(recvPacket);
-	cout << "recv packet from server : x = " << recvPacket.vec2Pos.x << ", y = " << recvPacket.vec2Pos.y << ", PID = " << recvPacket.uiPlayerID << ", BALLPOS = " << recvPacket.bPos.x << endl;
-	
+	/*cout << "recv packet from server : x = " << recvPacket.vec2Pos.x << ", y = " << recvPacket.vec2Pos.y << ", PID = " << recvPacket.uiPlayerID << ", BALLPOS = " << recvPacket.bPos.x << endl;
+	*/
 
 	switch (recvPacket.pkType)
 	{
@@ -324,13 +320,18 @@ void Interaction()
 		return;
 
 	case PACKET_TYPE::START:
+		g_GameStatus = PACKET_TYPE::START;
 		gGameFramework.SetClientID(recvPacket.uiPlayerID);
-		g_GameStatus = PACKET_TYPE::MAIN;
 		cout << "Packet type is START, my PID is : " << gGameFramework.GetID() << endl;
 		break;
 
+	case PACKET_TYPE::READY:
+		g_GameStatus = PACKET_TYPE::READY;
+		cout << "Waiting for player" << endl;
+		break;
+
 	case PACKET_TYPE::MAIN:
-		//cout << "Packet type is MAIN" << endl;
+
 		cs_packet_mainGame temp;
 		temp.pkType = recvPacket.pkType;
 		temp.ptPos = recvPacket.vec2Pos;
@@ -357,6 +358,6 @@ void recvID2Server(SOCKET sock) {
 	if (retval == SOCKET_ERROR) {
 		err_display((char*)"recv()");
 	}
-	else if (retval == 0) 
+	else if (retval == 0)
 		return;
 }
