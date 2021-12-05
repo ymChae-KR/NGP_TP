@@ -1,6 +1,4 @@
-﻿
-
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "Client.h"
 #include "GameFramework.h"
 
@@ -21,11 +19,10 @@ HANDLE hThread;
 DWORD WINAPI GameThread(LPVOID arg);
 HANDLE hEvent; // 이벤트
 
-
 global_variable WGameFramework gGameFramework;
 global_variable Render_State render_state;
 
-bool g_bGameStart{ false };
+PACKET_TYPE g_GameStatus{ PACKET_TYPE::NONE };
 unsigned int CliendID = 0; // 서버에서 결정해주는 클라이언트 번호
 char buf[BUFSIZE + 1]; // 데이터 송수신 버퍼
 void recvID2Server(SOCKET sock);
@@ -286,15 +283,17 @@ void Interaction()
 	int len;
 
 	// 서버와 데이터 통신
-
+		
+	if (g_GameStatus == PACKET_TYPE::START)
+	{
+		int a = 0;
+	}
 	// 송신
-	sc_packet_mainGame packet{};
-	packet.vec2Pos = gGameFramework.GetPlayerPos();
+	cs_packet_mainGame packet{};
+	packet.pkType = g_GameStatus;
 	packet.uiPlayerID = gGameFramework.GetID();
-	//packet.bPos = gGameFramework.GetBallPos();
-	packet.bPos.x = 100;
-	packet.bPos.y = 100;
-	retval = send(sock, (char*)&packet, sizeof(sc_packet_mainGame), 0);
+	packet.ptPos = gGameFramework.GetPlayerPos();
+	retval = send(sock, (char*)&packet, sizeof(cs_packet_mainGame), 0);
 
 	if (retval == SOCKET_ERROR)
 	{
@@ -305,7 +304,6 @@ void Interaction()
 
 	// 수신
 	sc_packet_mainGame recvPacket{};
-	
 	len = recvn(sock, reinterpret_cast<char*>(&recvPacket), sizeof(sc_packet_mainGame), 0);
 	if (len == SOCKET_ERROR) {
 		err_display((char*)"recv()");
@@ -326,13 +324,13 @@ void Interaction()
 		return;
 
 	case PACKET_TYPE::START:
-		gGameFramework.SetClientID(recvPacket.pkType);
-
-		cout << "Packet type is START, my PID is : " << recvPacket.pkType << endl;
+		gGameFramework.SetClientID(recvPacket.uiPlayerID);
+		g_GameStatus = PACKET_TYPE::MAIN;
+		cout << "Packet type is START, my PID is : " << gGameFramework.GetID() << endl;
 		break;
 
 	case PACKET_TYPE::MAIN:
-		cout << "Packet type is MAIN" << endl;
+		//cout << "Packet type is MAIN" << endl;
 		cs_packet_mainGame temp;
 		temp.pkType = recvPacket.pkType;
 		temp.ptPos = recvPacket.vec2Pos;

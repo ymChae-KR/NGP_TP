@@ -18,7 +18,7 @@ struct gameData
 class CNetMgr
 {
 private:
-	vector<gameData> m_vecData;
+	std::vector<gameData> m_vecData;
 	
 public:
 
