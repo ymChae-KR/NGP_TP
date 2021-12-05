@@ -1,12 +1,20 @@
 #pragma once
+
+
 class Ball
 {
 private:
+	int isReady;
 	POINT ptPoint;
 	VECTOR2 ballPoint;
 	VECTOR2 vecForce;
+	clock_t moveTime;
+	clock_t lastTime;
 
-	float radius;
+	//float radius;
+
+public:
+	void BallUpdate();
 
 public:
 
