@@ -320,7 +320,7 @@ void Interaction()
 
 	case PACKET_TYPE::START:
 		gGameFramework.SetClientID(recvPacket.pkType);
-
+		g_GameStatus = PACKET_TYPE::MAIN;
 		cout << "Packet type is START, my PID is : " << recvPacket.pkType << endl;
 		break;
 

@@ -1,32 +1,7 @@
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
-
 #include "ServerData.h"
-#include "GameData.h"
-#include "CNetMgr.h"
-#include "server.cpp"
 
-void err_quit(char* msg);
-void err_display(char* msg);
-int recvn(SOCKET s, char* buf, int len, int flags);
-void Send_Packet(void* _packet, SOCKET _sock);
-UINT judgePacketData(ID _id);
-DWORD WINAPI MainGameThread(LPVOID arg);
-DWORD WINAPI EndGameThread(LPVOID arg);
-
-SOCKET listen_sock;
-HANDLE hSendEvent; // 전송 완료 이벤트
-HANDLE hRecvEvent; // 수신 완료 이벤트
-unsigned int ThreadNum = 1;
-
-//MainGame::BallUpdate()
-//MainGame::notifyCollisions()
-//MainGame::playerUpdate(POINT p2dPosition)
-
-ID g_clientIDManager[2]{};      //  클라이언트 ID 부여 후 이를 관리할 컨테이너, 차후에 서버 프로젝트의 mainGame 안에서 관리 할 예정
-UINT g_uiIDCnt{ 0 };            //  각 클라이언트 ID 부여를 위한 Count
-BOOL g_bGameStart{ false };     //  게임 시작 여부 확인 변수
-
-CNetMgr g_NetMgr;
+static CNetMgr g_NetMgr;
 
 SOCKET init_Client_Socket(SOCKET listen_sock) { //연결용 소켓 생성
 
@@ -68,7 +43,7 @@ DWORD WINAPI MainGameThread(LPVOID arg)
     gd.m_ID = judgePacketData(PID);
 
     g_clientIDManager[g_uiIDCnt].sc_Client_Address = clientaddr;
-    g_clientIDManager[g_uiIDCnt].uiID = g_uiIDCnt++;
+    //g_clientIDManager[g_uiIDCnt].uiID = g_uiIDCnt++;
    
     while (true) 
     {
@@ -174,96 +149,4 @@ int main(int argc, char* argv[])
     // 윈속 종료
     WSACleanup();
     return 0;
-}
-
-void recvData(SOCKET sock) {
-
-    int retval;
-
-    cs_packet_mainGame CLpacket;
-    int datalen = sizeof(cs_packet_mainGame);
-
-    retval = recvn(sock, (char*)&datalen, datalen, 0); //구조체 크기 받기
-    if (retval == SOCKET_ERROR) err_display((char*)"recv()");
-
-    printf("구조체 크기 %d바이트를 받았습니다.\r\n", retval);
-    printf("[받은 데이터] %d\r\n", datalen);
-
-    //받은 데이터
-    int dataSize;
-    char sBuf[BUFSIZE];
-    cs_packet_mainGame* packet;
-
-    dataSize = recvn(sock, sBuf, BUFSIZE, 0);
-    if (retval == SOCKET_ERROR) err_display((char*)"recv()");
-
-    sBuf[dataSize] = '\0';
-    packet = (cs_packet_mainGame*)sBuf;
-    printf("[TCP 서버] %d바이트를 받았습니다.\r\n", dataSize);
-    printf("[받은 데이터] %s\r\n", (char*)&packet);
-
-    //return *packet;
-
-}
-
-void Send_Packet(void* _packet, SOCKET _sock)
-{
-    //char* packet = reinterpret_cast<char*>(_packet);
-
-    // 데이터 보내기
-    sc_packet_mainGame* temp = reinterpret_cast<sc_packet_mainGame*>(_packet);
-    int retval = send(_sock, (char*)temp, sizeof(sc_packet_mainGame), 0);
-
-    if (retval == SOCKET_ERROR)
-    {
-        err_display((char*)"send()");
-        return;
-    }
-
-    printf("Send_Packet()함수로 패킷을 보냈습니다.\r\n", retval);
-
-}
-
-void SendID2Client(SOCKET _sock, SOCKADDR_IN _clientaddr)
-{
-    sc_packet_mainGame packet{};
-    packet.pkType = PACKET_TYPE::START;
-    packet.uiPlayerID = g_clientIDManager[g_uiIDCnt].uiID;
-
-    Send_Packet(&packet, _sock);
-    cout << g_uiIDCnt << "번째 클라이언트 접속 후 클라 ID : " << packet.uiPlayerID << "송신" << endl;
-}
-
-UINT judgePacketData(ID _id)
-{
-    if (_id.uiID == 0)
-        return 1;
-    else if (_id.uiID == 1)
-        return 0;
-    else
-    {
-        cout << "Client PID 판단 오류" << endl;
-        return 2;
-    }
-
-    return 2;
-}
-
-void Recv_Packet_Assembly(char* _p)
-{
-    cs_packet_mainGame* packet = reinterpret_cast<cs_packet_mainGame*>(_p);
-    
-    switch (packet->pkType)
-    {
-    case PACKET_TYPE::NONE:
-        
-        break;
-    case PACKET_TYPE::START:
-
-        break;
-    case PACKET_TYPE::MAIN:
-        g_NetMgr.setPacketData(*packet);
-        break;
-    }
-
 }

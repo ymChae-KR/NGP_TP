@@ -1,6 +1,4 @@
 #pragma once
-#include "ServerData.h"
-
 enum PACKET_TYPE
 {
 	NONE,
@@ -17,22 +15,22 @@ struct VECTOR2
 
 struct ID
 {
-	SOCKADDR_IN		sc_Client_Address;
-	UINT			uiID;
+	SOCKADDR_IN				sc_Client_Address;
+	unsigned int			uiID;
 };
 
 struct cs_packet_mainGame
 {
 	PACKET_TYPE pkType;
 	VECTOR2 ptPos;
-	UINT uiPlayerID;
+	unsigned int uiPlayerID;
 };
 
 struct sc_packet_mainGame
 {
 	PACKET_TYPE pkType;
 	VECTOR2		vec2Pos;
-	UINT		uiPlayerID;
+	unsigned int		uiPlayerID;
 };
 
 struct sc_packet_EndGame 

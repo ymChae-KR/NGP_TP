@@ -7,7 +7,6 @@ struct gameData
 {
 	UINT		m_ID;		//	각 플레이어 ID
 	VECTOR2		m_vecPos;	//	플레이어 Pos
-
 };
 
 //	네트워크 매니저는 각 쓰레드에서 받은 패킷 데이터를 바탕으로 전체 게임을 컨트롤한다.
@@ -15,7 +14,7 @@ struct gameData
 class CNetMgr
 {
 private:
-	vector<gameData> m_vecData;
+	std::vector<gameData> m_vecData;
 	
 public:
 
@@ -25,7 +24,8 @@ public:
 	
 	//	setter
 	void setData(gameData _g) { m_vecData.push_back(_g); }
-	void setPacketData(cs_packet_mainGame _pk) { m_vecData[_pk.uiPlayerID].m_vecPos = _pk.ptPos; }
+	void setPacketData(cs_packet_mainGame _pk);
+
 
 public:
 	CNetMgr();

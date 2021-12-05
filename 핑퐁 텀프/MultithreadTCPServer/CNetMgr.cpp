@@ -1,5 +1,23 @@
 #include "CNetMgr.h"
 
+void CNetMgr::setPacketData(cs_packet_mainGame _pk)
+{
+	switch (_pk.pkType)
+	{
+	case PACKET_TYPE::NONE:
+		
+		break;
+		
+	case PACKET_TYPE::START:
+		g_clientIDManager[g_uiIDCnt].uiID = g_uiIDCnt++;
+		break;
+
+	case PACKET_TYPE::MAIN:
+		m_vecData[_pk.uiPlayerID].m_vecPos = _pk.ptPos;
+		break;
+	}
+}
+
 CNetMgr::CNetMgr()
 {
 	m_vecData.resize(2);
@@ -8,17 +26,3 @@ CNetMgr::CNetMgr()
 CNetMgr::~CNetMgr()
 {
 }
-
-//gameData CNetMgr::getOtherPlayerData(UINT _id)
-//{
-//	UINT PID{};
-//
-//	if (_id == 0)
-//		PID = 1;
-//	else if (_id == 1)
-//		PID = 0;
-//	else
-//		PID == 2;
-//
-//	return m_vecData[PID];
-//}
