@@ -299,6 +299,7 @@ void Interaction()
 
 	/*cout << "send packet to server : x = " << packet.ptPos.x << ", y = " << packet.ptPos.y << ", PID = " << packet.uiPlayerID << ", BALLPOS = " << packet.bPos.x << endl;*/
 
+
 	// 수신
 	sc_packet_mainGame recvPacket{};
 	len = recvn(sock, reinterpret_cast<char*>(&recvPacket), sizeof(sc_packet_mainGame), 0);
@@ -332,17 +333,17 @@ void Interaction()
 
 	case PACKET_TYPE::MAIN:
 
+		g_GameStatus = PACKET_TYPE::MAIN;
 		cs_packet_mainGame temp;
 		temp.pkType = recvPacket.pkType;
 		temp.ptPos = recvPacket.vec2Pos;
 		temp.uiPlayerID = recvPacket.uiPlayerID;
 		temp.bPos = recvPacket.bPos;
 
-		//Ball_Pos ballPos;
-		//ballPos.ballPos = BallPacket.ballPos;
-
-		gGameFramework.SetPlayerData(temp);
+		gGameFramework.SetEnemyData(temp);
 		gGameFramework.SetBallPos(temp);
+
+		cout << temp.uiPlayerID << " 번 클라 x = " << temp.ptPos.x << ", y = " << temp.ptPos.y << endl;
 
 		break;
 	}

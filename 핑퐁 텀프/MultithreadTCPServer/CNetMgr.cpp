@@ -11,11 +11,10 @@ PACKET_TYPE CNetMgr::setPacketData(cs_packet_mainGame _pk)
 	switch (_pk.pkType)
 	{
 	case PACKET_TYPE::NONE:
-		
 		break;
 		
 	case PACKET_TYPE::START:
-		
+
 		m_vecData[_pk.uiPlayerID].m_status = PACKET_TYPE::READY;
 		m_vecData[_pk.uiPlayerID].m_vecPos = _pk.ptPos;
 		m_vecData[_pk.uiPlayerID].m_ballPos = _pk.bPos;
@@ -40,9 +39,9 @@ PACKET_TYPE CNetMgr::setPacketData(cs_packet_mainGame _pk)
 		break;
 
 	case PACKET_TYPE::MAIN:
-		
+
 		m_vecData[_pk.uiPlayerID].m_vecPos = _pk.ptPos;
-		m_vecData[_pk.uiPlayerID].m_ballPos = _pk.bPos;
+		//m_vecData[_pk.uiPlayerID].m_ballPos = _pk.bPos;
 
 		return PACKET_TYPE::MAIN;
 		break;

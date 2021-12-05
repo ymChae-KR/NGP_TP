@@ -44,6 +44,14 @@ void WGameFramework::SetBallPos(cs_packet_mainGame _packet) {
 	m_pBall->SetBallPoint(_packet.bPos);
 }
 
+void WGameFramework::SetEnemyData(cs_packet_mainGame _packet)
+{
+	if (_packet.uiPlayerID != m_uiID)
+	{
+		m_pEnemy->SetPlayerPoint(_packet.ptPos);
+	}
+}
+
 WGameFramework::WGameFramework()
 {
 	Clear();
@@ -90,9 +98,7 @@ void WGameFramework::OnDraw(HDC hdc)
 		m_pEnemy->getPlayerPoint().x + 40, m_pEnemy->getPlayerPoint().y + 100);
 
 	EllipseR(hdc, ball_x + 100, ball_y + 100, 10);
-	
 	ball_x += 10;
-
 }
 
 void WGameFramework::OnUpdate(const float frameTime)
