@@ -20,7 +20,7 @@ enum PACKET_TYPE
 	START,
 	READY,
 	MAIN,
-	END, // END TYPE 추가
+	END,
 
 };
 
@@ -48,4 +48,5 @@ struct sc_packet_mainGame
 	VECTOR2		bPos;
 	UINT		uiPlayerID;
 	UINT		uiScore;
+	UINT		emScore; // 상대의 점수 
 };

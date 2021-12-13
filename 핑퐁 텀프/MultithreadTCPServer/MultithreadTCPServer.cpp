@@ -35,7 +35,7 @@ SOCKET init_Client_Socket(SOCKET listen_sock) { //연결용 소켓 생성
 
 DWORD WINAPI MainGameThread(LPVOID arg)
 {
-
+    
 
     SOCKET client_sock = (SOCKET)arg;
     SOCKADDR_IN clientaddr;
@@ -48,7 +48,7 @@ DWORD WINAPI MainGameThread(LPVOID arg)
     // 클라이언트 정보 얻기
     addrlen = sizeof(clientaddr);
     getpeername(client_sock, (SOCKADDR*)&clientaddr, &addrlen);
-
+    
 
     UINT     uiID{};
     gameData gd;                    //  클라 1번에 송신할 클라2번의 데이터 판단용 변수    
@@ -57,7 +57,7 @@ DWORD WINAPI MainGameThread(LPVOID arg)
     gd.m_ID = judgePacketData(PID);
     g_clientIDManager[g_uiIDCnt].sc_Client_Address = clientaddr;
     g_clientIDManager[g_uiIDCnt].uiID = g_uiIDCnt++;
-
+    
 
     PACKET_TYPE g_GameStatus{ PACKET_TYPE::NONE };
 
@@ -79,7 +79,7 @@ DWORD WINAPI MainGameThread(LPVOID arg)
 
         PACKET_TYPE pType = g_NetMgr.setPacketData(recvPacket);     //  수신 Data를 GameScene Data에 Setting
 
-
+        
         //  송신
         if (!g_bGameStart)
             SendID2Client(client_sock, pType);
@@ -93,21 +93,22 @@ DWORD WINAPI MainGameThread(LPVOID arg)
             data.uiPlayerID = gd.m_ID;
             data.bPos = g_NetMgr.getBall().getBallPoint();
             data.uiScore = g_NetMgr.getOtherPlayerData(uiID).m_uiScore;
+            data.emScore = g_NetMgr.getOtherPlayerData(gd.m_ID).m_uiScore;
 
+            
+            retval = send(client_sock, (char*)&data, sizeof(sc_packet_mainGame), 0);   
 
-            retval = send(client_sock, (char*)&data, sizeof(sc_packet_mainGame), 0);
+            
 
-
-
-            if (retval == SOCKET_ERROR)
+            if (retval == SOCKET_ERROR) 
             {
                 err_display((char*)"send()");
                 break;
             }
         }
-
+        
         g_NetMgr.update();
-
+ 
     }
 
     // closesocket()
@@ -173,7 +174,7 @@ int main(int argc, char* argv[])
 
         WaitForSingleObject(hThread, INFINITE);
         CloseHandle(h_Event);
-
+        
     }
 
 
