@@ -303,6 +303,7 @@ void Interaction()
 	if (recvPacket.pkType != PACKET_TYPE::END)
 		bTemp = true;
 
+
 	switch (recvPacket.pkType)
 	{
 	case PACKET_TYPE::NONE:
