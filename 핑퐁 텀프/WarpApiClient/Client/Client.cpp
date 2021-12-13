@@ -274,6 +274,8 @@ void Interaction()
 	int retval;
 	int len;
 
+	bool bTemp = false;
+
 	// 서버와 데이터 통신
 
 	// 송신
@@ -297,6 +299,9 @@ void Interaction()
 	}
 	else if (len == 0)
 		return;
+
+	if (recvPacket.pkType != PACKET_TYPE::END)
+		bTemp = true;
 
 	switch (recvPacket.pkType)
 	{
@@ -328,6 +333,8 @@ void Interaction()
 		gGameFramework.SetEnemyData(temp);
 		gGameFramework.SetBallPos(temp);
 		gGameFramework.SetScore(temp);
+		/*if (gGameFramework.GetScore() == 3)
+			g_GameStatus = PACKET_TYPE::END;*/
 
 		//cout << temp.uiPlayerID << " 번 클라 x = " << temp.ptPos.x << ", y = " << temp.ptPos.y << endl;
 		cout << temp.uiPlayerID << "번 점수: " << gGameFramework.GetScore() << endl;
@@ -343,17 +350,17 @@ void Interaction()
 
 		if (pck.uiScore >= 3)
 		{
-			int check = MessageBox(NULL, L"당신이 이겼습니다.", L"승리", MB_RETRYCANCEL | MB_ICONINFORMATION);
+			int check = MessageBox(NULL, L"당신이 이겼습니다.", L"승리", MB_RETRYCANCEL);
 			if (check == MB_RETRYCANCEL) {
-				g_GameStatus = PACKET_TYPE::MAIN; //재시작이 안됨
+				g_GameStatus = PACKET_TYPE::READY; //재시작이 안됨
 			}
 		}
 
 		else
 		{
-			int check = MessageBox(NULL, L"상대가 이겼습니다.", L"패배", MB_RETRYCANCEL | MB_ICONINFORMATION);
+			int check = MessageBox(NULL, L"상대가 이겼습니다.", L"패배", MB_RETRYCANCEL);
 			if (check == MB_RETRYCANCEL) {
-				g_GameStatus = PACKET_TYPE::MAIN;
+				g_GameStatus = PACKET_TYPE::READY;
 			}
 		}
 

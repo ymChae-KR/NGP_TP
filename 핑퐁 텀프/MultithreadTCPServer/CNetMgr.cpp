@@ -64,38 +64,35 @@ BOOL CNetMgr::Collision(VECTOR2 _playerPos, VECTOR2 _ballPos)
 
 void CNetMgr::CheckGameStatus()
 {
-	if (m_vecData[0].m_uiScore >= 3)
-		ResetGame(true, 0);
-	else if (m_vecData[1].m_uiScore >= 3)
-		ResetGame(true, 1);
+	VECTOR2 resetPoint{ 640, 360 };
+	VECTOR2 resetForce{ m_Ball.getBallForce().x, m_Ball.getBallForce().y };
+	if (resetForce.x < 0.f)
+		resetForce.x = -8.f;
 	else
-	{
-		VECTOR2 resetPoint{ 640, 360 };
-		VECTOR2 resetForce{ m_Ball.getBallForce().x, m_Ball.getBallForce().y };
-		if (resetForce.x < 0.f)
-			resetForce.x = -8.f;
-		else
-			resetForce.x = 8.f;
+		resetForce.x = 8.f;
 
-		if (resetForce.y < 0.f)
-			resetForce.y = -4.f;
-		else
-			resetForce.y = 4.f;
-		m_Ball.SetBallPoint(resetPoint);
-		m_Ball.SetBallForce(resetForce);
-	}
+	if (resetForce.y < 0.f)
+		resetForce.y = -4.f;
+	else
+		resetForce.y = 4.f;
+	m_Ball.SetBallPoint(resetPoint);
+	m_Ball.SetBallForce(resetForce);
+
+
+	//ResetGame(bGameEnd, iWinnerID);
 }
 
 void CNetMgr::ResetGame(BOOL _bStatus, UINT _uiID)
 {
-	
+
 	if (!_bStatus)
 		return;
 
 
-	/*for (int i = 0; i < 2; ++i) { //
+	for (int i = 0; i < 2; ++i)
+	{
 		m_vecData[i].m_uiScore = 0;
-	}*/
+	}
 
 
 }
@@ -133,6 +130,7 @@ PACKET_TYPE CNetMgr::setPacketData(cs_packet_mainGame _pk)
 		}
 
 		g_bGameStart = true;
+		ResetGame(true, 0);
 
 		return PACKET_TYPE::MAIN;
 		break;
@@ -141,13 +139,16 @@ PACKET_TYPE CNetMgr::setPacketData(cs_packet_mainGame _pk)
 
 		m_vecData[_pk.uiPlayerID].m_vecPos = _pk.ptPos;
 
-		for (int i = 0; i < 2; ++i) { // 3점 만족하면 END 리턴
-			if (m_vecData[i].m_uiScore >= 3) {
+		//for (int i = 0; i < 2; ++i) { // 3점 만족하면 END 리턴
+		//	if (m_vecData[i].m_uiScore >= 3) {
+		//		m_vecData[_pk.uiPlayerID].m_status = PACKET_TYPE::END;
+		//		return PACKET_TYPE::END;
+		//	}
+		//}
 
-				m_vecData[_pk.uiPlayerID].m_status = PACKET_TYPE::END;
-
-				return PACKET_TYPE::END;
-			}
+		if (m_vecData[0].m_uiScore >= 3 || m_vecData[1].m_uiScore >= 3)
+		{
+			return PACKET_TYPE::END;
 		}
 
 		return PACKET_TYPE::MAIN;
@@ -155,7 +156,7 @@ PACKET_TYPE CNetMgr::setPacketData(cs_packet_mainGame _pk)
 
 	case PACKET_TYPE::END: //END TYPE 추가
 
-		//g_bGameStart = false; 
+		g_bGameStart = false;
 		return PACKET_TYPE::READY;
 
 		break;

@@ -64,6 +64,7 @@ void SendID2Client(SOCKET _sock, PACKET_TYPE _pType)
     packet.uiPlayerID = g_clientIDManager[g_uiIDCnt - 1].uiID;
 
     Send_Packet(packet, _sock);
+    bIDSended = true;
 
     //cout << g_uiIDCnt << " 번째 클라이언트 접속 후 클라 ID : " << packet.uiPlayerID << " 송신" << endl;
 

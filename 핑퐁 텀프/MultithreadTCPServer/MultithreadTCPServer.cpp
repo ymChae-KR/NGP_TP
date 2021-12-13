@@ -9,6 +9,7 @@ UINT ThreadNum = 1;
 ID g_clientIDManager[2]{};
 UINT g_uiIDCnt{ 0 };
 BOOL g_bGameStart{ false };
+BOOL bIDSended{ false };
 
 CNetMgr g_NetMgr;
 //static CNetMgr g_NetMgr;
@@ -94,10 +95,7 @@ DWORD WINAPI MainGameThread(LPVOID arg)
             data.bPos = g_NetMgr.getBall().getBallPoint();
             data.uiScore = g_NetMgr.getOtherPlayerData(uiID).m_uiScore;
 
-
             retval = send(client_sock, (char*)&data, sizeof(sc_packet_mainGame), 0);
-
-
 
             if (retval == SOCKET_ERROR)
             {
@@ -172,9 +170,9 @@ int main(int argc, char* argv[])
         else { CloseHandle(hThread); }
 
         WaitForSingleObject(hThread, INFINITE);
-        CloseHandle(h_Event);
 
     }
+        CloseHandle(h_Event);
 
 
     // closesocket()

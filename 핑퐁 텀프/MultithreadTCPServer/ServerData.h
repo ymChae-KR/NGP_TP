@@ -43,3 +43,5 @@ extern ID g_clientIDManager[2];      //  클라이언트 ID 부여 후 이를 관리할 컨테�
 extern UINT g_uiIDCnt;            //  각 클라이언트 ID 부여를 위한 Count
 extern BOOL g_bGameStart;     //  게임 시작 여부 확인 변수
 extern CNetMgr g_NetMgr;
+
+extern BOOL bIDSended;
