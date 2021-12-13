@@ -36,8 +36,7 @@ DWORD WINAPI MainGameThread(LPVOID arg);
 DWORD WINAPI EndGameThread(LPVOID arg);
 
 extern SOCKET listen_sock;
-extern HANDLE hSendEvent; // 전송 완료 이벤트
-extern HANDLE hRecvEvent; // 수신 완료 이벤트
+extern HANDLE h_Event[3];
 extern UINT ThreadNum;
 
 extern ID g_clientIDManager[2];      //  클라이언트 ID 부여 후 이를 관리할 컨테이너, 차후에 서버 프로젝트의 mainGame 안에서 관리 할 예정

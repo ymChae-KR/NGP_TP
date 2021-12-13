@@ -44,36 +44,6 @@ int recvn(SOCKET s, char* buf, int len, int flags)
     return (len - left);
 }
 
-void recvData(SOCKET sock) {
-
-    int retval;
-
-    cs_packet_mainGame CLpacket;
-    int datalen = sizeof(cs_packet_mainGame);
-
-    retval = recvn(sock, (char*)&datalen, datalen, 0); //구조체 크기 받기
-    if (retval == SOCKET_ERROR) err_display((char*)"recv()");
-
-    printf("구조체 크기 %d바이트를 받았습니다.\r\n", retval);
-    printf("[받은 데이터] %d\r\n", datalen);
-
-    //받은 데이터
-    int dataSize;
-    char sBuf[BUFSIZE];
-    cs_packet_mainGame* packet;
-
-    dataSize = recvn(sock, sBuf, BUFSIZE, 0);
-    if (retval == SOCKET_ERROR) err_display((char*)"recv()");
-
-    sBuf[dataSize] = '\0';
-    packet = (cs_packet_mainGame*)sBuf;
-    printf("[TCP 서버] %d바이트를 받았습니다.\r\n", dataSize);
-    printf("[받은 데이터] %s\r\n", (char*)&packet);
-
-    //return *packet;
-
-}
-
 void Send_Packet(sc_packet_mainGame _packet, SOCKET _sock)
 {
     int retval = send(_sock, (char*)&_packet, sizeof(sc_packet_mainGame), 0);

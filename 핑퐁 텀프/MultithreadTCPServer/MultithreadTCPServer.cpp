@@ -3,10 +3,9 @@
 
 //  reinitialized extern global variables
 SOCKET listen_sock;
-HANDLE hSendEvent; // 전송 완료 이벤트
-HANDLE hRecvEvent; // 수신 완료 이벤트
-UINT ThreadNum = 1;
+HANDLE h_Event[3]; // 스레드 동기화를 위한 이벤트 핸들
 
+UINT ThreadNum = 1;
 ID g_clientIDManager[2]{};
 UINT g_uiIDCnt{ 0 };
 BOOL g_bGameStart{ false };
@@ -36,6 +35,8 @@ SOCKET init_Client_Socket(SOCKET listen_sock) { //연결용 소켓 생성
 
 DWORD WINAPI MainGameThread(LPVOID arg)
 {
+
+
     SOCKET client_sock = (SOCKET)arg;
     SOCKADDR_IN clientaddr;
 
@@ -48,6 +49,7 @@ DWORD WINAPI MainGameThread(LPVOID arg)
     addrlen = sizeof(clientaddr);
     getpeername(client_sock, (SOCKADDR*)&clientaddr, &addrlen);
 
+
     UINT     uiID{};
     gameData gd;                    //  클라 1번에 송신할 클라2번의 데이터 판단용 변수    
     ID PID{ clientaddr, g_uiIDCnt };
@@ -55,6 +57,9 @@ DWORD WINAPI MainGameThread(LPVOID arg)
     gd.m_ID = judgePacketData(PID);
     g_clientIDManager[g_uiIDCnt].sc_Client_Address = clientaddr;
     g_clientIDManager[g_uiIDCnt].uiID = g_uiIDCnt++;
+
+
+    PACKET_TYPE g_GameStatus{ PACKET_TYPE::NONE };
 
     if (g_uiIDCnt > 1)
         int a = 0;
@@ -71,7 +76,9 @@ DWORD WINAPI MainGameThread(LPVOID arg)
         else if (retval == 0)
             break;
 
+
         PACKET_TYPE pType = g_NetMgr.setPacketData(recvPacket);     //  수신 Data를 GameScene Data에 Setting
+
 
         //  송신
         if (!g_bGameStart)
@@ -80,15 +87,19 @@ DWORD WINAPI MainGameThread(LPVOID arg)
         {
             //  패킷 조립
             sc_packet_mainGame data{};
-            data.pkType = MAIN;
+
+            data.pkType = pType;
             data.vec2Pos = g_NetMgr.getOtherPlayerData(gd.m_ID).m_vecPos;
             data.uiPlayerID = gd.m_ID;
             data.bPos = g_NetMgr.getBall().getBallPoint();
             data.uiScore = g_NetMgr.getOtherPlayerData(uiID).m_uiScore;
 
-            retval = send(client_sock, (char*)&data, sizeof(sc_packet_mainGame), 0);    
 
-            if (retval == SOCKET_ERROR) 
+            retval = send(client_sock, (char*)&data, sizeof(sc_packet_mainGame), 0);
+
+
+
+            if (retval == SOCKET_ERROR)
             {
                 err_display((char*)"send()");
                 break;
@@ -96,6 +107,7 @@ DWORD WINAPI MainGameThread(LPVOID arg)
         }
 
         g_NetMgr.update();
+
     }
 
     // closesocket()
@@ -132,6 +144,7 @@ int main(int argc, char* argv[])
     int addrlen = sizeof(clientaddr);
     getpeername(client_sock, (SOCKADDR*)&clientaddr, &addrlen);
 
+
     while (1)
     {
         // accept()
@@ -148,12 +161,21 @@ int main(int argc, char* argv[])
 
         ThreadNum++; //ClientNum
 
+        //스레드 동기화를 위한 이벤트 객체
+        h_Event[0] = CreateEvent(NULL, TRUE, FALSE, NULL); //플레이어1
+        h_Event[1] = CreateEvent(NULL, TRUE, FALSE, NULL); //플레이어2
+        h_Event[2] = CreateEvent(NULL, TRUE, FALSE, NULL); //EndGameThread
 
         // 스레드 생성
         hThread = CreateThread(NULL, 0, MainGameThread, (LPVOID)client_sock, 0, NULL);
         if (hThread == NULL) { closesocket(client_sock); }
         else { CloseHandle(hThread); }
+
+        WaitForSingleObject(hThread, INFINITE);
+        CloseHandle(h_Event);
+
     }
+
 
     // closesocket()
     closesocket(listen_sock);

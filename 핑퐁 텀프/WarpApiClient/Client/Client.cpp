@@ -268,19 +268,6 @@ void Send_Packet(void* _packet)
 
 }
 
-void Recv_Packet()
-{
-	int retval;
-
-	// 수신
-	sc_packet_mainGame recvPacket{};
-	retval = recvn(sock, reinterpret_cast<char*>(&recvPacket), sizeof(recvPacket), 0);
-	if (retval == SOCKET_ERROR) {
-		err_display((char*)"recv()");
-	}
-	else if (retval == 0)
-		return;
-}
 
 void Interaction()
 {
@@ -302,9 +289,6 @@ void Interaction()
 		return;
 	}
 
-	/*cout << "send packet to server : x = " << packet.ptPos.x << ", y = " << packet.ptPos.y << ", PID = " << packet.uiPlayerID << ", BALLPOS = " << packet.bPos.x << endl;*/
-
-
 	// 수신
 	sc_packet_mainGame recvPacket{};
 	len = recvn(sock, reinterpret_cast<char*>(&recvPacket), sizeof(sc_packet_mainGame), 0);
@@ -313,11 +297,6 @@ void Interaction()
 	}
 	else if (len == 0)
 		return;
-
-
-	// 받은 데이터 출력
-	/*cout << "recv packet from server : x = " << recvPacket.vec2Pos.x << ", y = " << recvPacket.vec2Pos.y << ", PID = " << recvPacket.uiPlayerID << ", BALLPOS = " << recvPacket.bPos.x << endl;
-	*/
 
 	switch (recvPacket.pkType)
 	{
@@ -354,19 +333,35 @@ void Interaction()
 		cout << temp.uiPlayerID << "번 점수: " << gGameFramework.GetScore() << endl;
 
 		break;
+
+	case PACKET_TYPE::END: //endgame 상태 추가
+
+		sc_packet_mainGame pck;
+		pck.uiScore = recvPacket.uiScore;
+
+		g_GameStatus = PACKET_TYPE::END;
+
+		if (pck.uiScore >= 3)
+		{
+			int check = MessageBox(NULL, L"당신이 이겼습니다.", L"승리", MB_RETRYCANCEL | MB_ICONINFORMATION);
+			if (check == MB_RETRYCANCEL) {
+				g_GameStatus = PACKET_TYPE::MAIN; //재시작이 안됨
+			}
+		}
+
+		else
+		{
+			int check = MessageBox(NULL, L"상대가 이겼습니다.", L"패배", MB_RETRYCANCEL | MB_ICONINFORMATION);
+			if (check == MB_RETRYCANCEL) {
+				g_GameStatus = PACKET_TYPE::MAIN;
+			}
+		}
+
+		break;
+
+
 	}
 
-}
 
-void recvID2Server(SOCKET sock) {
 
-	int retval;
-
-	cs_packet_mainGame recvPacket{};
-	retval = recvn(sock, reinterpret_cast<char*>(&recvPacket), sizeof(recvPacket), 0);
-	if (retval == SOCKET_ERROR) {
-		err_display((char*)"recv()");
-	}
-	else if (retval == 0)
-		return;
 }

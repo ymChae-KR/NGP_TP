@@ -18,12 +18,6 @@
     <ClCompile Include="MultithreadTCPServer.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="MainGame.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="draw.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="CNetMgr.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>

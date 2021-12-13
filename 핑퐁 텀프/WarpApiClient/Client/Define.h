@@ -11,7 +11,7 @@ enum PACKET_TYPE
 	START,
 	READY,
 	MAIN,
-
+	END,
 };
 
 // KeyBoard
