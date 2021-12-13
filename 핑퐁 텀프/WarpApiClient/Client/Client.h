@@ -8,6 +8,7 @@
 #include <winsock2.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <tchar.h>
 
 #define SERVERIP   "127.0.0.1"
 #define SERVERPORT 9000

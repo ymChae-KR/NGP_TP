@@ -55,6 +55,7 @@ void WGameFramework::SetEnemyData(sc_packet_mainGame _packet)
 void WGameFramework::SetScore(sc_packet_mainGame _packet)
 {
 	m_uiScore = _packet.uiScore;
+	m_emScore = _packet.emScore;
 }
 
 WGameFramework::WGameFramework()
@@ -103,7 +104,52 @@ void WGameFramework::OnDraw(HDC hdc)
 		m_pEnemy->getPlayerPoint().x + 40, m_pEnemy->getPlayerPoint().y + 100);
 
 	EllipseR(hdc, ball_x, ball_y, 10);
-	ball_x += 10;
+
+
+}
+
+void WGameFramework::DrawScore(HDC hdc)
+{
+	UINT score = 0;
+
+	if (m_uiID == 1) {
+		score = m_uiScore;
+		m_uiScore = m_emScore;
+		m_emScore = score;
+	}
+
+	switch (m_uiScore) {
+	case 1:
+		EllipseR(hdc, 300, 30, 5);
+		break;
+	case 2:
+		EllipseR(hdc, 300, 30, 5);
+		EllipseR(hdc, 300, 20, 5);
+		break;
+	case 3:
+		EllipseR(hdc, 300, 30, 5);
+		EllipseR(hdc, 300, 20, 5);
+		EllipseR(hdc, 300, 10, 5);
+		break;
+	
+	}
+
+	switch (m_emScore) {
+	case 1:
+		EllipseR(hdc, 900, 30, 5);
+		break;
+	case 2:
+		EllipseR(hdc, 900, 30, 5);
+		EllipseR(hdc, 900, 20, 5);
+		break;
+	case 3:
+		EllipseR(hdc, 900, 30, 5);
+		EllipseR(hdc, 900, 20, 5);
+		EllipseR(hdc, 900, 10, 5);
+		break;
+
+	}
+
 }
 
 void WGameFramework::OnUpdate(const float frameTime)
