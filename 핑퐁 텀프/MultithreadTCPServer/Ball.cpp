@@ -7,8 +7,8 @@ Ball::Ball()
 	m_vecPos.y = 400.f;
 
 	//	공 방향 벡터 초기화
-	m_vecForce.x = -4.f;
-	m_vecForce.y = -1.5f;
+	m_vecForce.x = -8.f;
+	m_vecForce.y = -2.f;
 
 }
 

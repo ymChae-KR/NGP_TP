@@ -96,6 +96,7 @@ struct sc_packet_mainGame
 	VECTOR2		vec2Pos;
 	VECTOR2		bPos;
 	UINT		uiPlayerID;
+	UINT		uiScore;
 };
 
 //struct Ball_Pos {

@@ -119,9 +119,15 @@ void WGameFramework::KeyBoard(UINT iMessage, WPARAM wParam, LPARAM lParam)
 		}
 
 		if (GetAsyncKeyState(VK_UP))
-			m_pPlayer->SetPlayerPoint(VECTOR2(m_pPlayer->getPlayerPoint().x, m_pPlayer->getPlayerPoint().y - 10.f));
+		{
+			if(m_pPlayer->getPlayerPoint().y > -30.f)
+				m_pPlayer->SetPlayerPoint(VECTOR2(m_pPlayer->getPlayerPoint().x, m_pPlayer->getPlayerPoint().y - 10.f));
+		}
 		if (GetAsyncKeyState(VK_DOWN))
-			m_pPlayer->SetPlayerPoint(VECTOR2(m_pPlayer->getPlayerPoint().x, m_pPlayer->getPlayerPoint().y + 10.f));
+		{
+			if (m_pPlayer->getPlayerPoint().y < 600.f)
+				m_pPlayer->SetPlayerPoint(VECTOR2(m_pPlayer->getPlayerPoint().x, m_pPlayer->getPlayerPoint().y + 10.f));
+		}
 
 	}
 	break;

@@ -47,8 +47,10 @@ DWORD WINAPI MainGameThread(LPVOID arg)
     addrlen = sizeof(clientaddr);
     getpeername(client_sock, (SOCKADDR*)&clientaddr, &addrlen);
 
+    UINT     uiID{};
     gameData gd;                    //  클라 1번에 송신할 클라2번의 데이터 판단용 변수    
     ID PID{ clientaddr, g_uiIDCnt };
+    uiID = g_uiIDCnt;
     gd.m_ID = judgePacketData(PID);
     g_clientIDManager[g_uiIDCnt].sc_Client_Address = clientaddr;
     g_clientIDManager[g_uiIDCnt].uiID = g_uiIDCnt++;
@@ -81,6 +83,7 @@ DWORD WINAPI MainGameThread(LPVOID arg)
             data.vec2Pos = g_NetMgr.getOtherPlayerData(gd.m_ID).m_vecPos;
             data.uiPlayerID = gd.m_ID;
             data.bPos = g_NetMgr.getBall().getBallPoint();
+            data.uiScore = g_NetMgr.getOtherPlayerData(uiID).m_uiScore;
 
             retval = send(client_sock, (char*)&data, sizeof(sc_packet_mainGame), 0);    
 

@@ -8,23 +8,44 @@ void CNetMgr::update()
 	temp.y = m_Ball.getBallPoint().y + ( m_Ball.getBallForce().y * 0.5f );
 	m_Ball.SetBallPoint(temp);
 
-	for (int i = 0; i < 2; ++i)
+	for (int i = 0; i < 2; ++i)		//	AABB - player bar x Ball
 	{
 		BOOL bTemp = Collision(m_vecData[i].m_vecPos, m_Ball.getBallPoint());	//	충돌 시 return true
 		if (bTemp)
 		{
 			VECTOR2 changeForce = m_Ball.getBallForce();
-			
-			//	일단 
-			if (rand() % 2)
-				changeForce.y *= -1.f;
-			else
-				changeForce.y *= 1.8f;
-			changeForce.x *= -1.f;
+			changeForce.x *= -1.5f;
 			m_Ball.SetBallForce(changeForce);
 			return;
 		}
+	}   
+
+	if (m_Ball.getBallPoint().x < -10.f)
+	{
+		m_vecData[1].m_uiScore += 1;
+		CheckGameStatus();
+		//	플레이어 2 +1점
 	}
+	else if (m_Ball.getBallPoint().x > 1290.f)
+	{
+		m_vecData[0].m_uiScore += 1;
+		CheckGameStatus();
+		//	플레이어 1 +1점
+	}
+
+	VECTOR2 vecForce = m_Ball.getBallForce();
+	if (m_Ball.getBallPoint().y <= 0.f )		//	위 아래 공 반대로 튕기기
+	{
+		vecForce.y = fabs(vecForce.y);
+		m_Ball.SetBallForce(vecForce);
+	}
+
+	if (m_Ball.getBallPoint().y >= 550.f)
+	{
+		vecForce.y = fabs(vecForce.y) * -1.f;
+		m_Ball.SetBallForce(vecForce);
+	}
+
 }
 
 BOOL CNetMgr::Collision(VECTOR2 _playerPos, VECTOR2 _ballPos)
@@ -36,6 +57,32 @@ BOOL CNetMgr::Collision(VECTOR2 _playerPos, VECTOR2 _ballPos)
 		return true;
 
 	return false;
+}
+
+void CNetMgr::CheckGameStatus()
+{
+	if (m_vecData[0].m_uiScore >= 3)
+		ResetGame(true, 0);
+	else if (m_vecData[1].m_uiScore >= 3)
+		ResetGame(true, 1);
+	else
+	{
+		VECTOR2 resetPoint{640, 360};
+		VECTOR2 resetForce{ m_Ball.getBallForce().x, m_Ball.getBallForce().y};
+		m_Ball.SetBallPoint(resetPoint);
+		m_Ball.SetBallForce(resetForce);
+	}
+}
+
+void CNetMgr::ResetGame(BOOL _bStatus, UINT _uiID)
+{
+	if (!_bStatus)
+		return;
+	
+	for (int i = 0; i < 2; ++i)
+	{
+		m_vecData[i].m_uiScore = 0;
+	}
 }
 
 PACKET_TYPE CNetMgr::setPacketData(cs_packet_mainGame _pk)

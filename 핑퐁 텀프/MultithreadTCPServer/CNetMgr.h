@@ -9,6 +9,7 @@ struct gameData
 	UINT		m_ID;		//	각 플레이어 ID
 	VECTOR2		m_vecPos;	//	플레이어 Pos
 	PACKET_TYPE	m_status{ PACKET_TYPE::NONE };	//	클라 별 게임 상태 저장 변수
+	UINT		m_uiScore;
 };
 
 //	네트워크 매니저는 각 쓰레드에서 받은 패킷 데이터를 바탕으로 전체 게임을 컨트롤한다.
@@ -22,6 +23,8 @@ private:
 public:
 	void update();
 	BOOL Collision(VECTOR2 _playerPos, VECTOR2 _ballPos);
+	void CheckGameStatus();
+	void ResetGame(BOOL, UINT);
 
 public:
 	//	getter

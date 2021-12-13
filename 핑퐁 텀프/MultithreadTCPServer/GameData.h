@@ -28,6 +28,7 @@ struct ID
 {
 	SOCKADDR_IN				sc_Client_Address;
 	unsigned int			uiID;
+	unsigned int			uiScore;
 };
 
 struct cs_packet_mainGame
@@ -41,9 +42,9 @@ struct cs_packet_mainGame
 
 struct sc_packet_mainGame
 {
-
 	PACKET_TYPE pkType;
 	VECTOR2		vec2Pos;
 	VECTOR2		bPos;
 	UINT		uiPlayerID;
+	UINT		uiScore;
 };
