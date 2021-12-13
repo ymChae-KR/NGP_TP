@@ -11,7 +11,8 @@ ID g_clientIDManager[2]{};
 UINT g_uiIDCnt{ 0 };
 BOOL g_bGameStart{ false };
 
-static CNetMgr g_NetMgr;
+CNetMgr g_NetMgr;
+//static CNetMgr g_NetMgr;
 
 SOCKET init_Client_Socket(SOCKET listen_sock) { //楷搬侩 家南 积己
 

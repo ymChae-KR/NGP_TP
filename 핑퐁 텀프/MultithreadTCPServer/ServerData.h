@@ -18,7 +18,7 @@
 
 using namespace std;
 
-
+class CNetMgr;
 //	소켓 오류 출력 함수
 void err_quit(char* msg);
 void err_display(char* msg);
@@ -43,3 +43,4 @@ extern UINT ThreadNum;
 extern ID g_clientIDManager[2];      //  클라이언트 ID 부여 후 이를 관리할 컨테이너, 차후에 서버 프로젝트의 mainGame 안에서 관리 할 예정
 extern UINT g_uiIDCnt;            //  각 클라이언트 ID 부여를 위한 Count
 extern BOOL g_bGameStart;     //  게임 시작 여부 확인 변수
+extern CNetMgr g_NetMgr;

@@ -1,6 +1,8 @@
 #include "CNetMgr.h"
 #include "Collision.h"
 
+int iUpdateCnt;
+
 void CNetMgr::update()
 {
 	VECTOR2 temp{};
@@ -14,7 +16,7 @@ void CNetMgr::update()
 		if (bTemp)
 		{
 			VECTOR2 changeForce = m_Ball.getBallForce();
-			changeForce.x *= -1.5f;
+			changeForce.x *= -1.25f;
 			m_Ball.SetBallForce(changeForce);
 			return;
 		}
@@ -40,12 +42,13 @@ void CNetMgr::update()
 		m_Ball.SetBallForce(vecForce);
 	}
 
-	if (m_Ball.getBallPoint().y >= 550.f)
+	if (m_Ball.getBallPoint().y >= 630.f)
 	{
 		vecForce.y = fabs(vecForce.y) * -1.f;
 		m_Ball.SetBallForce(vecForce);
 	}
 
+	cout << iUpdateCnt++ << "번째 업데이트" << endl;
 }
 
 BOOL CNetMgr::Collision(VECTOR2 _playerPos, VECTOR2 _ballPos)
@@ -68,7 +71,16 @@ void CNetMgr::CheckGameStatus()
 	else
 	{
 		VECTOR2 resetPoint{640, 360};
-		VECTOR2 resetForce{ m_Ball.getBallForce().x, m_Ball.getBallForce().y};
+		VECTOR2 resetForce{ m_Ball.getBallForce().x, m_Ball.getBallForce().y };
+		if (resetForce.x < 0.f)
+			resetForce.x = -8.f;
+		else
+			resetForce.x = 8.f;
+
+		if (resetForce.y < 0.f)
+			resetForce.y = -4.f;
+		else
+			resetForce.y = 4.f;
 		m_Ball.SetBallPoint(resetPoint);
 		m_Ball.SetBallForce(resetForce);
 	}

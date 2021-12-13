@@ -33,23 +33,28 @@ void WGameFramework::SetClientID(UINT _ID)
 	}
 }
 
-void WGameFramework::SetPlayerPos(cs_packet_mainGame _packet)
+void WGameFramework::SetPlayerPos(sc_packet_mainGame _packet)
 {
-	m_pEnemy->SetPlayerPoint(_packet.ptPos);
+	m_pEnemy->SetPlayerPoint(_packet.vec2Pos);
 
 }
 
-void WGameFramework::SetBallPos(cs_packet_mainGame _packet) {
+void WGameFramework::SetBallPos(sc_packet_mainGame _packet) {
 
 	m_pBall->SetBallPoint(_packet.bPos);
 }
 
-void WGameFramework::SetEnemyData(cs_packet_mainGame _packet)
+void WGameFramework::SetEnemyData(sc_packet_mainGame _packet)
 {
 	if (_packet.uiPlayerID != m_uiID)
 	{
-		m_pEnemy->SetPlayerPoint(_packet.ptPos);
+		m_pEnemy->SetPlayerPoint(_packet.vec2Pos);
 	}
+}
+
+void WGameFramework::SetScore(sc_packet_mainGame _packet)
+{
+	m_uiScore = _packet.uiScore;
 }
 
 WGameFramework::WGameFramework()

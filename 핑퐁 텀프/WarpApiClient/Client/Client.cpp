@@ -227,9 +227,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 
 	case WM_KEYDOWN:
-	case WM_KEYUP:
 	{
 		gGameFramework.KeyBoard(message, wParam, lParam);
+	}
+	break;
+
+	case WM_KEYUP:
+	{
+		//gGameFramework.KeyBoard(message, wParam, lParam);
 	}
 	break;
 
@@ -334,16 +339,19 @@ void Interaction()
 	case PACKET_TYPE::MAIN:
 
 		g_GameStatus = PACKET_TYPE::MAIN;
-		cs_packet_mainGame temp;
+		sc_packet_mainGame temp;
 		temp.pkType = recvPacket.pkType;
-		temp.ptPos = recvPacket.vec2Pos;
+		temp.vec2Pos = recvPacket.vec2Pos;
 		temp.uiPlayerID = recvPacket.uiPlayerID;
 		temp.bPos = recvPacket.bPos;
+		temp.uiScore = recvPacket.uiScore;
 
 		gGameFramework.SetEnemyData(temp);
 		gGameFramework.SetBallPos(temp);
+		gGameFramework.SetScore(temp);
 
-		cout << temp.uiPlayerID << " 번 클라 x = " << temp.ptPos.x << ", y = " << temp.ptPos.y << endl;
+		//cout << temp.uiPlayerID << " 번 클라 x = " << temp.ptPos.x << ", y = " << temp.ptPos.y << endl;
+		cout << temp.uiPlayerID << "번 점수: " << gGameFramework.GetScore() << endl;
 
 		break;
 	}
