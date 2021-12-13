@@ -90,7 +90,11 @@
     <ClInclude Include="Ball.h" />
     <ClInclude Include="CNetMgr.h" />
     <ClInclude Include="GameData.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="ServerData.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="MultithreadTCPServer.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

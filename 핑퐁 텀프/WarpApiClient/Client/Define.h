@@ -12,6 +12,7 @@ enum PACKET_TYPE
 	READY,
 	MAIN,
 	END,
+
 };
 
 // KeyBoard
@@ -97,6 +98,7 @@ struct sc_packet_mainGame
 	VECTOR2		bPos;
 	UINT		uiPlayerID;
 	UINT		uiScore;
+	UINT		emScore; // 상대의 점수 
 };
 
 //struct Ball_Pos {

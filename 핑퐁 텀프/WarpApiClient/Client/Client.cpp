@@ -20,7 +20,6 @@ DWORD WINAPI GameThread(LPVOID arg);
 HANDLE hEvent; // 이벤트
 
 global_variable WGameFramework gGameFramework;
-global_variable Render_State render_state;
 
 PACKET_TYPE g_GameStatus{ PACKET_TYPE::NONE };
 unsigned int CliendID = 0; // 서버에서 결정해주는 클라이언트 번호
@@ -209,6 +208,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		SelectObject(GLayDC, GLay);
 
 		gGameFramework.OnDraw(GLayDC);
+		gGameFramework.DrawScore(GLayDC);
 
 		BitBlt(mainHDC, 0, 0, FRAME_WIDTH, FRAME_HEIGHT, GLayDC, 0, 0, SRCCOPY);
 		DeleteDC(GLayDC);
@@ -330,6 +330,7 @@ void Interaction()
 		temp.uiPlayerID = recvPacket.uiPlayerID;
 		temp.bPos = recvPacket.bPos;
 		temp.uiScore = recvPacket.uiScore;
+		temp.emScore = recvPacket.emScore;
 
 		gGameFramework.SetEnemyData(temp);
 		gGameFramework.SetBallPos(temp);
@@ -348,7 +349,7 @@ void Interaction()
 		pck.uiScore = recvPacket.uiScore;
 
 		g_GameStatus = PACKET_TYPE::END;
-
+		
 		if (pck.uiScore >= 3)
 		{
 			int check = MessageBox(NULL, L"당신이 이겼습니다.", L"승리", MB_RETRYCANCEL);
@@ -366,10 +367,10 @@ void Interaction()
 		}
 
 		break;
-
-
+		
+		
 	}
 
-
+	
 
 }
